@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DorkMaster Supreme — Elite OSINT Search Intelligence</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #0a0c10; --bg2: #0f1117; --bg3: #161922; --bg4: #1c2030;
+    --border: #2a2f3e; --border2: #3a4155;
+    --accent: #00d4ff; --accent2: #7c3aed; --accent3: #10b981;
+    --accent4: #f59e0b; --accent5: #ef4444;
+    --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+    --glow: 0 0 20px rgba(0,212,255,0.15); --glow2: 0 0 20px rgba(124,58,237,0.15);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+  .container{max-width:1400px;margin:0 auto;padding:0 20px;position:relative;z-index:1;}
+
+  /* HEADER */
+  header{padding:16px 20px;border-bottom:1px solid var(--border);background:rgba(10,12,16,0.97);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+  .header-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .logo{display:flex;align-items:center;gap:12px;}
+  .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent2),var(--accent));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .logo-text h1{font-size:19px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .logo-text p{font-size:10px;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;}
+  .header-right{display:flex;align-items:center;gap:20px;}
+  .header-stats{display:flex;gap:20px;}
+  .stat-badge{text-align:center;}
+  .stat-badge .num{font-size:18px;font-weight:700;color:var(--accent);}
+  .stat-badge .lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
+  /* Live domain badge in header */
+  .domain-badge{display:none;align-items:center;gap:8px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--accent);}
+  .domain-badge .db-dot{width:6px;height:6px;border-radius:50%;background:var(--accent3);box-shadow:0 0 6px var(--accent3);}
+  .domain-badge.show{display:flex;}
+
+  /* HERO */
+  .hero{padding:32px 0 24px;}
+  .hero-title{text-align:center;margin-bottom:28px;}
+  .hero-title h2{font-size:30px;font-weight:800;line-height:1.2;margin-bottom:8px;}
+  .hero-title h2 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .hero-title p{color:var(--text2);font-size:13px;}
+
+  /* TARGET CARD */
+  .target-card{background:var(--bg3);border:1px solid var(--border2);border-radius:16px;padding:24px;margin-bottom:28px;box-shadow:var(--glow);}
+  .target-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .target-row{display:flex;gap:12px;flex-wrap:wrap;}
+  .target-input-wrap{flex:1;min-width:260px;position:relative;}
+  .target-input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;}
+  #targetDomain{width:100%;background:var(--bg4);border:1px solid var(--border2);border-radius:10px;padding:12px 14px 12px 38px;color:var(--text);font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;}
+  #targetDomain:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,.1);}
+  #targetDomain::placeholder{color:var(--text3);}
+  .btn-apply{background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;border-radius:10px;padding:12px 24px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s;white-space:nowrap;display:flex;align-items:center;gap:8px;}
+  .btn-apply:hover{opacity:.9;}
+  .btn-apply:active{transform:scale(.98);}
+  .quick-targets{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center;}
+  .quick-tag{background:var(--bg4);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;}
+  .quick-tag:hover{border-color:var(--accent);color:var(--accent);}
+  .target-status{margin-top:10px;font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;min-height:16px;}
+  .target-status.live{color:var(--accent3);}
+
+  /* ENGINE TABS */
+  .engine-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
+  .engine-tab{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:7px 14px;cursor:pointer;transition:all .2s;font-size:12px;color:var(--text2);}
+  .engine-tab:hover{border-color:var(--border2);color:var(--text);}
+  .engine-tab.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08);}
+  .engine-tab .etab-icon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+  .e-google .etab-icon{background:#4285f4;color:#fff;}
+  .e-bing .etab-icon{background:#00809d;color:#fff;}
+  .e-yandex .etab-icon{background:#fc3f1d;color:#fff;}
+  .e-yandexru .etab-icon{background:#b71c1c;color:#fff;}
+  .e-duckduckgo .etab-icon{background:#de5833;color:#fff;}
+  .e-shodan .etab-icon{background:#c0392b;color:#fff;}
+  .e-censys .etab-icon{background:#2563eb;color:#fff;}
+  .e-fofa .etab-icon{background:#0891b2;color:#fff;}
+  .e-zoomeye .etab-icon{background:#7c3aed;color:#fff;}
+  .e-github .etab-icon{background:#24292e;color:#fff;}
+  .e-pastebin .etab-icon{background:#02a79e;color:#fff;}
+  .e-wayback .etab-icon{background:#1e40af;color:#fff;}
+
+  /* CAT FILTER */
+  .cat-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;align-items:center;}
+  .cat-filter-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-right:4px;white-space:nowrap;}
+  .cat-btn{padding:4px 12px;border-radius:20px;font-size:11px;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:transparent;color:var(--text2);}
+  .cat-btn:hover{border-color:var(--border2);color:var(--text);}
+  .cat-btn.active{background:var(--accent2);border-color:var(--accent2);color:#fff;}
+
+  /* STATS BAR */
+  .stats-bar{display:flex;gap:16px;flex-wrap:wrap;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 20px;margin-bottom:20px;align-items:center;}
+  .stats-bar-item{display:flex;flex-direction:column;align-items:center;}
+  .stats-bar-item .n{font-size:18px;font-weight:700;}
+  .stats-bar-item .l{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
+  .n-blue{color:var(--accent);} .n-purple{color:var(--accent2);} .n-green{color:var(--accent3);}
+  .n-amber{color:var(--accent4);} .n-red{color:var(--accent5);}
+  .stats-bar-div{width:1px;height:30px;background:var(--border);}
+  .stats-bar-search{flex:1;}
+  #dorkSearch{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:8px 12px 8px 36px;color:var(--text);font-size:13px;outline:none;}
+  #dorkSearch:focus{border-color:var(--accent);}
+  .search-wrap{position:relative;}
+  .search-wrap i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;}
+
+  /* LAUNCH ALL BAR */
+  .launch-all-bar{background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(0,212,255,.08));border:1px solid var(--border2);border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px;}
+  .launch-all-bar p{font-size:12px;color:var(--text2);flex:1;}
+  .btn-launch-all{background:var(--accent2);border:none;border-radius:8px;padding:8px 18px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;gap:8px;}
+  .btn-launch-all:hover{opacity:.85;}
+
+  /* DORK GRID */
+  .dork-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin-bottom:40px;}
+  .dork-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s,transform .15s,box-shadow .2s;display:flex;flex-direction:column;}
+  .dork-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+  .dork-card-header{padding:10px 14px 8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--bg4);}
+  .dork-cat-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:4px;flex-shrink:0;}
+  .cat-info-exposure{background:rgba(239,68,68,.15);color:#f87171;}
+  .cat-admin{background:rgba(245,158,11,.15);color:#fbbf24;}
+  .cat-files{background:rgba(16,185,129,.15);color:#34d399;}
+  .cat-login{background:rgba(124,58,237,.15);color:#a78bfa;}
+  .cat-vuln{background:rgba(239,68,68,.2);color:#fc8181;}
+  .cat-config{background:rgba(0,212,255,.15);color:#67e8f9;}
+  .cat-database{background:rgba(249,115,22,.15);color:#fb923c;}
+  .cat-network{background:rgba(16,185,129,.12);color:#6ee7b7;}
+  .cat-social{background:rgba(236,72,153,.15);color:#f472b6;}
+  .cat-iot{background:rgba(245,158,11,.2);color:#fcd34d;}
+  .cat-cloud{background:rgba(59,130,246,.15);color:#93c5fd;}
+  .cat-email{background:rgba(167,139,250,.15);color:#c4b5fd;}
+  .cat-subdomain{background:rgba(52,211,153,.12);color:#6ee7b7;}
+  .cat-sensitive{background:rgba(239,68,68,.25);color:#fca5a5;}
+  .cat-api{background:rgba(14,165,233,.15);color:#7dd3fc;}
+  .cat-code{background:rgba(163,230,53,.15);color:#bef264;}
+  .cat-camera{background:rgba(251,113,133,.15);color:#fda4af;}
+  .cat-phone{background:rgba(196,181,253,.15);color:#ddd6fe;}
+  .cat-osint{background:rgba(0,212,255,.18);color:#22d3ee;}
+  .cat-wayback{background:rgba(99,102,241,.2);color:#a5b4fc;}
+  .cat-filter{background:rgba(100,116,139,.2);color:#cbd5e1;}
+  .cat-yandex{background:rgba(255,204,0,.15);color:#fde68a;}
+  .cat-bing{background:rgba(0,188,212,.15);color:#67e8f9;}
+  .cat-ddg{background:rgba(222,88,51,.15);color:#fca5a5;}
+  .cat-fofa{background:rgba(8,145,178,.2);color:#7dd3fc;}
+  .cat-grep{background:rgba(72,201,232,.15);color:#a5f3fc;}
+  .dork-name{font-size:12px;font-weight:600;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dork-risk{font-size:9px;padding:2px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;}
+  .risk-critical{background:rgba(239,68,68,.2);color:#f87171;}
+  .risk-high{background:rgba(245,158,11,.2);color:#fbbf24;}
+  .risk-medium{background:rgba(16,185,129,.15);color:#34d399;}
+  .risk-low{background:rgba(99,102,241,.15);color:#a5b4fc;}
+  .dork-body{padding:10px 14px;flex:1;display:flex;flex-direction:column;gap:8px;}
+  .dork-desc{font-size:11px;color:var(--text2);line-height:1.5;}
+  .dork-query-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-family:'Courier New',monospace;font-size:11px;color:var(--accent);word-break:break-all;line-height:1.6;max-height:78px;overflow-y:auto;cursor:pointer;transition:border-color .15s;}
+  .dork-query-box:hover{border-color:var(--border2);}
+  .dork-query-box::-webkit-scrollbar{width:3px;}
+  .dork-query-box::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+  .dork-query-box .domain-hl{color:var(--accent4);}
+  .dork-query-box .kw{color:#f472b6;}
+  .dork-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .btn-search{display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 9px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+  .btn-search:hover{border-color:var(--border2);color:var(--text);background:var(--bg4);}
+  .btn-primary{flex:1;}
+  .btn-copy{background:var(--bg4);border:1px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text3);font-size:11px;cursor:pointer;transition:all .15s;}
+  .btn-copy:hover{color:var(--accent);border-color:var(--accent);}
+  .btn-g:hover{border-color:#4285f4;color:#4285f4;}
+  .btn-b:hover{border-color:#00809d;color:#00809d;}
+  .btn-y:hover{border-color:#fc3f1d;color:#fc3f1d;}
+  .btn-yr:hover{border-color:#b71c1c;color:#b71c1c;}
+  .btn-ddg:hover{border-color:#de5833;color:#de5833;}
+
+  /* SECTION HEADER */
+  .section-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .section-header h3{font-size:16px;font-weight:600;color:var(--text);}
+  .section-line{flex:1;height:1px;background:var(--border);}
+  #visibleCount{font-size:11px;color:var(--text3);}
+
+  /* POWER COMBOS SECTION */
+  .combos-section{margin-top:20px;padding-top:40px;border-top:1px solid var(--border);}
+  .combos-section h3{font-size:22px;font-weight:700;margin-bottom:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .combos-section .sub{font-size:12px;color:var(--text3);margin-bottom:24px;}
+  .combo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px;}
+  .combo-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px 18px;transition:border-color .2s;}
+  .combo-card:hover{border-color:var(--border2);}
+  .combo-card .combo-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;}
+  .combo-card .combo-note{font-size:11px;color:var(--text2);margin-bottom:8px;line-height:1.5;}
+  .combo-card pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--accent3);overflow-x:auto;line-height:1.9;white-space:pre-wrap;word-break:break-all;font-family:'Courier New',monospace;}
+  .combo-copy-btn{margin-top:8px;background:transparent;border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:10px;color:var(--text3);cursor:pointer;transition:all .15s;}
+  .combo-copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* FOOTER */
+  footer{border-top:1px solid var(--border);padding:24px 20px;text-align:center;color:var(--text3);font-size:12px;margin-top:40px;}
+  footer a{color:var(--accent);text-decoration:none;}
+
+  /* TOAST */
+  #toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--accent);border-radius:10px;padding:12px 20px;font-size:13px;color:var(--accent);opacity:0;transform:translateY(10px);transition:all .3s;z-index:9999;display:flex;align-items:center;gap:8px;pointer-events:none;}
+  #toast.show{opacity:1;transform:translateY(0);}
+
+  /* EMPTY STATE */
+  .empty-state{text-align:center;padding:60px 20px;color:var(--text3);grid-column:1/-1;}
+  .empty-state i{font-size:40px;margin-bottom:16px;display:block;}
+
+  @media(max-width:640px){
+    .dork-grid{grid-template-columns:1fr;}
+    .combo-grid{grid-template-columns:1fr;}
+    .header-stats,.header-right{display:none;}
+    .hero-title h2{font-size:22px;}
+    .engine-tabs{gap:4px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">🔍</div>
+      <div class="logo-text">
+        <h1>DorkMaster Supreme</h1>
+        <p>Elite OSINT Search Intelligence Suite</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="domain-badge" id="domainBadge">
+        <span class="db-dot"></span>
+        <span id="domainBadgeText">example.com</span>
+      </div>
+      <div class="header-stats">
+        <div class="stat-badge"><div class="num" id="totalDorks">0</div><div class="lbl">Dorks</div></div>
+        <div class="stat-badge"><div class="num" style="color:var(--accent3)" id="cntCritical">0</div><div class="lbl">Critical</div></div>
+        <div class="stat-badge"><div class="num" style="color:var(--accent4)" id="cntHigh">0</div><div class="lbl">High</div></div>
+        <div class="stat-badge"><div class="num" style="color:var(--accent2)">12</div><div class="lbl">Engines</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <div class="hero-title">
+      <h2>Supreme <span>OSINT Dork</span> Intelligence</h2>
+      <p>600+ curated dorks across 12 engines. Enter a target domain — every query auto-populates live. For authorized security research only.</p>
+    </div>
+
+    <!-- TARGET CARD -->
+    <div class="target-card">
+      <div class="target-label"><i class="fa-solid fa-crosshairs"></i> Target Domain</div>
+      <div class="target-row">
+        <div class="target-input-wrap">
+          <i class="fa-solid fa-globe"></i>
+          <input type="text" id="targetDomain" placeholder="example.com — all queries update live as you type" spellcheck="false"/>
+        </div>
+        <button class="btn-apply" onclick="applyTarget()"><i class="fa-solid fa-bolt"></i> Apply</button>
+      </div>
+      <div class="quick-targets">
+        <span style="font-size:11px;color:var(--text3);margin-right:4px;">Quick:</span>
+        <span class="quick-tag" onclick="setTarget('tesla.com')">tesla.com</span>
+        <span class="quick-tag" onclick="setTarget('microsoft.com')">microsoft.com</span>
+        <span class="quick-tag" onclick="setTarget('apple.com')">apple.com</span>
+        <span class="quick-tag" onclick="setTarget('github.com')">github.com</span>
+        <span class="quick-tag" onclick="setTarget('shopify.com')">shopify.com</span>
+        <span class="quick-tag" onclick="setTarget('amazon.com')">amazon.com</span>
+        <span class="quick-tag" onclick="setTarget('netflix.com')">netflix.com</span>
+      </div>
+      <div class="target-status" id="targetStatus">Enter a domain above — all 600+ queries update in real time</div>
+    </div>
+
+    <!-- ENGINE TABS -->
+    <div class="engine-tabs">
+      <div class="engine-tab e-google active" data-engine="google" onclick="selectEngine(this)"><div class="etab-icon">G</div>Google</div>
+      <div class="engine-tab e-bing" data-engine="bing" onclick="selectEngine(this)"><div class="etab-icon">B</div>Bing</div>
+      <div class="engine-tab e-yandex" data-engine="yandex" onclick="selectEngine(this)"><div class="etab-icon">Y</div>Yandex.com</div>
+      <div class="engine-tab e-yandexru" data-engine="yandexru" onclick="selectEngine(this)"><div class="etab-icon">Я</div>Yandex.ru</div>
+      <div class="engine-tab e-duckduckgo" data-engine="duckduckgo" onclick="selectEngine(this)"><div class="etab-icon">🦆</div>DuckDuckGo</div>
+      <div class="engine-tab e-shodan" data-engine="shodan" onclick="selectEngine(this)"><div class="etab-icon">S</div>Shodan</div>
+      <div class="engine-tab e-censys" data-engine="censys" onclick="selectEngine(this)"><div class="etab-icon">C</div>Censys</div>
+      <div class="engine-tab e-fofa" data-engine="fofa" onclick="selectEngine(this)"><div class="etab-icon">F</div>FOFA</div>
+      <div class="engine-tab e-zoomeye" data-engine="zoomeye" onclick="selectEngine(this)"><div class="etab-icon">Z</div>ZoomEye</div>
+      <div class="engine-tab e-github" data-engine="github" onclick="selectEngine(this)"><div class="etab-icon">⌥</div>GitHub</div>
+      <div class="engine-tab e-pastebin" data-engine="pastebin" onclick="selectEngine(this)"><div class="etab-icon">P</div>Pastebin</div>
+      <div class="engine-tab e-wayback" data-engine="wayback" onclick="selectEngine(this)"><div class="etab-icon">⏳</div>Wayback</div>
+    </div>
+
+    <!-- CATEGORY FILTER -->
+    <div class="cat-filter" id="catFilter">
+      <span class="cat-filter-label">Category:</span>
+      <button class="cat-btn active" data-cat="all" onclick="filterCat(this)">All</button>
+      <button class="cat-btn" data-cat="info-exposure" onclick="filterCat(this)">Exposure</button>
+      <button class="cat-btn" data-cat="admin" onclick="filterCat(this)">Admin</button>
+      <button class="cat-btn" data-cat="login" onclick="filterCat(this)">Login</button>
+      <button class="cat-btn" data-cat="files" onclick="filterCat(this)">Files</button>
+      <button class="cat-btn" data-cat="config" onclick="filterCat(this)">Config/Keys</button>
+      <button class="cat-btn" data-cat="vuln" onclick="filterCat(this)">Vulns</button>
+      <button class="cat-btn" data-cat="database" onclick="filterCat(this)">Database</button>
+      <button class="cat-btn" data-cat="network" onclick="filterCat(this)">Network</button>
+      <button class="cat-btn" data-cat="api" onclick="filterCat(this)">API</button>
+      <button class="cat-btn" data-cat="cloud" onclick="filterCat(this)">Cloud</button>
+      <button class="cat-btn" data-cat="code" onclick="filterCat(this)">Code</button>
+      <button class="cat-btn" data-cat="subdomain" onclick="filterCat(this)">Subdomains</button>
+      <button class="cat-btn" data-cat="email" onclick="filterCat(this)">Email</button>
+      <button class="cat-btn" data-cat="social" onclick="filterCat(this)">Social</button>
+      <button class="cat-btn" data-cat="sensitive" onclick="filterCat(this)">Sensitive</button>
+      <button class="cat-btn" data-cat="osint" onclick="filterCat(this)">OSINT</button>
+      <button class="cat-btn" data-cat="camera" onclick="filterCat(this)">Camera/IoT</button>
+      <button class="cat-btn" data-cat="wayback" onclick="filterCat(this)">Archive</button>
+    </div>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+      <div class="stats-bar-item"><div class="n n-blue" id="visibleCount">0</div><div class="l">Visible</div></div>
+      <div class="stats-bar-div"></div>
+      <div class="stats-bar-item"><div class="n n-red" id="cntCrit2">0</div><div class="l">Critical</div></div>
+      <div class="stats-bar-item"><div class="n n-amber" id="cntHigh2">0</div><div class="l">High</div></div>
+      <div class="stats-bar-item"><div class="n n-green" id="cntMed2">0</div><div class="l">Medium</div></div>
+      <div class="stats-bar-item"><div class="n n-purple" id="cntLow2">0</div><div class="l">Low</div></div>
+      <div class="stats-bar-div"></div>
+      <div class="stats-bar-search">
+        <div class="search-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="dorkSearch" placeholder="Search dorks by name, tag, or description…" oninput="filterDorks()">
+        </div>
+      </div>
+    </div>
+
+    <!-- LAUNCH ALL -->
+    <div class="launch-all-bar">
+      <p><i class="fa-solid fa-rocket" style="color:var(--accent2);margin-right:6px;"></i>
+        <strong style="color:var(--text)">Launch All Visible</strong> — Opens every filtered dork in the selected engine. Set your target domain first.</p>
+      <button class="btn-launch-all" onclick="launchAll()"><i class="fa-solid fa-paper-plane"></i> Launch All</button>
+    </div>
+
+    <!-- DORK GRID -->
+    <div class="section-header">
+      <h3>Dork Results</h3>
+      <div class="section-line"></div>
+      <span id="visibleCountLabel">loading…</span>
+    </div>
+    <div class="dork-grid" id="dorkGrid"></div>
+
+    <!-- POWER COMBOS -->
+    <div class="combos-section" id="combos">
+      <h3>⚡ Power Combo Chains</h3>
+      <p class="sub">Multi-operator combinations for advanced OSINT research. Domain auto-applied when set.</p>
+      <div class="combo-grid" id="comboGrid"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong style="color:var(--text)">DorkMaster Supreme</strong> — 600+ Dorks · 12 Engines · Domain-Aware · For authorized security research only.<br>
+  Always comply with applicable laws and the target's terms of service. <a href="#combos">↓ Power Combos</a>
+</footer>
+
+<div id="toast"><i class="fa-solid fa-check"></i><span id="toastMsg">Copied!</span></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// ENGINE URL BUILDERS
+// ════════════════════════════════════════════════════════
+const E = encodeURIComponent;
+const engines = {
+  google:     q => `https://www.google.com/search?q=${E(q)}`,
+  bing:       q => `https://www.bing.com/search?q=${E(q)}`,
+  yandex:     q => `https://yandex.com/search/?text=${E(q)}`,
+  yandexru:   q => `https://yandex.ru/search/?text=${E(q)}`,
+  duckduckgo: q => `https://duckduckgo.com/?q=${E(q)}`,
+  shodan:     q => `https://www.shodan.io/search?query=${E(q)}`,
+  censys:     q => `https://search.censys.io/hosts?q=${E(q)}`,
+  fofa:       q => `https://fofa.info/result?qbase64=${btoa(unescape(E(q)))}`,
+  zoomeye:    q => `https://www.zoomeye.org/searchResult?q=${E(q)}`,
+  github:     q => `https://github.com/search?q=${E(q)}&type=code`,
+  pastebin:   q => `https://www.google.com/search?q=site:pastebin.com+${E(q)}`,
+  wayback:    q => `https://web.archive.org/web/*/${q}`,
+};
+function getEngineName(e){return{google:'Google',bing:'Bing',yandex:'Yandex.com',yandexru:'Yandex.ru',duckduckgo:'DuckDuckGo',shodan:'Shodan',censys:'Censys',fofa:'FOFA',zoomeye:'ZoomEye',github:'GitHub',pastebin:'Pastebin',wayback:'Wayback'}[e]||e;}
+function getEngineIcon(e){return{google:'G',bing:'B',yandex:'Y',yandexru:'Я',duckduckgo:'🦆',shodan:'S',censys:'C',fofa:'F',zoomeye:'Z',github:'⌥',pastebin:'P',wayback:'⏳'}[e]||(e[0]||'?').toUpperCase();}
+function getEngineColor(e){return{google:'#4285f4',bing:'#00809d',yandex:'#fc3f1d',yandexru:'#b71c1c',duckduckgo:'#de5833',shodan:'#e74c3c',censys:'#2563eb',fofa:'#0891b2',zoomeye:'#7c3aed',github:'#24292e',pastebin:'#02a79e',wayback:'#1e40af'}[e]||'#888';}
+
+// ════════════════════════════════════════════════════════
+// DORK DATABASE — 600+ entries
+// ════════════════════════════════════════════════════════
+const DORKS = [
+  // ─── INFO EXPOSURE / RECON ───
+  {id:1,name:'All Indexed Pages',cat:'info-exposure',risk:'low',desc:'All pages indexed for the target domain.',query:'site:{domain}',tags:['site','recon','index']},
+  {id:2,name:'Subdomains (Wildcard)',cat:'subdomain',risk:'medium',desc:'Enumerate all subdomains indexed by the engine.',query:'site:*.{domain} -www',tags:['subdomain','wildcard','enum']},
+  {id:3,name:'Related Sites',cat:'osint',risk:'low',desc:'Sites similar or related to the target domain.',query:'related:{domain}',tags:['related','google','osint']},
+  {id:4,name:'Google Cache',cat:'osint',risk:'medium',desc:'Google cached version of target — reveals deleted/changed content.',query:'cache:{domain}',tags:['cache','google','osint']},
+  {id:5,name:'Google Info Card',cat:'osint',risk:'low',desc:'Google\'s info card and index data for the domain.',query:'info:{domain}',tags:['info','google','osint']},
+  {id:6,name:'Link Profile / Backlinks',cat:'osint',risk:'low',desc:'Sites that link to the target domain.',query:'link:{domain}',tags:['backlinks','google','osint']},
+  {id:7,name:'Sitemap.xml Discovery',cat:'info-exposure',risk:'low',desc:'Sitemap files revealing full URL structure.',query:'site:{domain} inurl:sitemap.xml',tags:['sitemap','recon']},
+  {id:8,name:'Robots.txt Analysis',cat:'info-exposure',risk:'low',desc:'Robots.txt reveals disallowed paths — often the most interesting ones.',query:'site:{domain} inurl:robots.txt',tags:['robots','recon']},
+  {id:9,name:'.well-known Paths',cat:'info-exposure',risk:'medium',desc:'Well-known paths for PKI, security.txt, and other configs.',query:'site:{domain} inurl:.well-known',tags:['well-known','pki']},
+  {id:10,name:'Open Directory Listings',cat:'info-exposure',risk:'high',desc:'Web server directory listings exposing file structure.',query:'site:{domain} intitle:"index of"',tags:['directory','listing','exposure']},
+  {id:11,name:'Directory: /backup',cat:'info-exposure',risk:'critical',desc:'Backup directory exposed — often contains critical files.',query:'site:{domain} intitle:"index of" /backup',tags:['directory','backup']},
+  {id:12,name:'Directory: /admin',cat:'info-exposure',risk:'high',desc:'Admin directory exposed in a directory listing.',query:'site:{domain} intitle:"index of" /admin',tags:['directory','admin']},
+  {id:13,name:'Directory: /uploads',cat:'info-exposure',risk:'high',desc:'Upload directory — may contain user-uploaded sensitive files.',query:'site:{domain} intitle:"index of" /uploads',tags:['directory','uploads']},
+  {id:14,name:'Directory: /config',cat:'info-exposure',risk:'critical',desc:'Configuration directory exposed.',query:'site:{domain} intitle:"index of" /config',tags:['directory','config']},
+  {id:15,name:'Directory: /logs',cat:'info-exposure',risk:'high',desc:'Log directory — may contain verbose application logs.',query:'site:{domain} intitle:"index of" /logs',tags:['directory','logs']},
+  {id:16,name:'Directory: /private',cat:'info-exposure',risk:'critical',desc:'Private directory contents exposed.',query:'site:{domain} intitle:"index of" /private',tags:['directory','private']},
+  {id:17,name:'Directory: /src',cat:'info-exposure',risk:'high',desc:'Source code directory exposed.',query:'site:{domain} intitle:"index of" /src',tags:['directory','source']},
+  {id:18,name:'Directory: /data',cat:'info-exposure',risk:'high',desc:'Data directory exposed.',query:'site:{domain} intitle:"index of" /data',tags:['directory','data']},
+  {id:19,name:'Directory: /db',cat:'info-exposure',risk:'critical',desc:'Database directory exposed.',query:'site:{domain} intitle:"index of" /db',tags:['directory','database']},
+
+  // ─── LOGIN / AUTH ───
+  {id:20,name:'Login Pages',cat:'login',risk:'medium',desc:'All login pages on the target domain.',query:'site:{domain} intitle:"login"',tags:['login','auth']},
+  {id:21,name:'Admin Login Pages',cat:'login',risk:'high',desc:'Admin-specific login portals.',query:'site:{domain} intitle:"admin" inurl:login',tags:['admin','login']},
+  {id:22,name:'Sign In Pages',cat:'login',risk:'medium',desc:'Sign-in page variants.',query:'site:{domain} intitle:"sign in"',tags:['signin','auth']},
+  {id:23,name:'Control Panel Access',cat:'login',risk:'high',desc:'Control panel login interfaces.',query:'site:{domain} intitle:"control panel"',tags:['panel','control','admin']},
+  {id:24,name:'Dashboard Portals',cat:'admin',risk:'high',desc:'Dashboards often exposing monitoring and management.',query:'site:{domain} intitle:"dashboard"',tags:['dashboard','admin']},
+  {id:25,name:'Administrator Pages',cat:'login',risk:'high',desc:'Administrator-labeled portals.',query:'site:{domain} intitle:"administrator"',tags:['administrator','admin']},
+  {id:26,name:'phpMyAdmin',cat:'login',risk:'critical',desc:'phpMyAdmin database management interface.',query:'site:{domain} inurl:phpmyadmin OR intitle:"phpMyAdmin"',tags:['phpmyadmin','database','admin']},
+  {id:27,name:'WordPress Admin',cat:'login',risk:'high',desc:'WordPress admin panel and login.',query:'site:{domain} inurl:wp-admin OR inurl:wp-login.php',tags:['wordpress','admin','cms']},
+  {id:28,name:'WordPress REST API',cat:'api',risk:'medium',desc:'WordPress REST API endpoints exposing site structure.',query:'site:{domain} inurl:wp-json',tags:['wordpress','api','rest']},
+  {id:29,name:'cPanel Interface',cat:'login',risk:'high',desc:'cPanel hosting control panel.',query:'site:{domain} inurl:cpanel',tags:['cpanel','hosting','admin']},
+  {id:30,name:'Webmail Interface',cat:'email',risk:'medium',desc:'Webmail login pages.',query:'site:{domain} inurl:webmail OR intitle:"Webmail"',tags:['webmail','email']},
+  {id:31,name:'Outlook Web Access',cat:'email',risk:'medium',desc:'Microsoft OWA login page.',query:'site:{domain} inurl:/owa/ OR intitle:"Outlook Web App"',tags:['outlook','owa','microsoft']},
+  {id:32,name:'Plesk Control Panel',cat:'login',risk:'high',desc:'Plesk hosting management interface.',query:'site:{domain} intitle:"Plesk"',tags:['plesk','hosting','admin']},
+  {id:33,name:'Grafana Dashboard',cat:'admin',risk:'high',desc:'Grafana monitoring dashboard.',query:'site:{domain} intitle:"Grafana"',tags:['grafana','monitoring','admin']},
+  {id:34,name:'Jenkins CI/CD',cat:'admin',risk:'critical',desc:'Jenkins continuous integration dashboard.',query:'site:{domain} intitle:"Jenkins"',tags:['jenkins','cicd','admin']},
+  {id:35,name:'GitLab Instance',cat:'admin',risk:'high',desc:'Self-hosted GitLab server.',query:'site:{domain} intitle:"GitLab"',tags:['gitlab','code','admin']},
+  {id:36,name:'Kibana Dashboard',cat:'admin',risk:'critical',desc:'Kibana Elasticsearch analytics dashboard.',query:'site:{domain} intitle:"Kibana"',tags:['kibana','elasticsearch','admin']},
+  {id:37,name:'Jupyter Notebooks',cat:'admin',risk:'critical',desc:'Exposed Jupyter notebooks with code and data.',query:'site:{domain} inurl:/notebooks OR intitle:"Jupyter Notebook"',tags:['jupyter','python','data']},
+  {id:38,name:'Apache Tomcat Manager',cat:'admin',risk:'critical',desc:'Tomcat manager for deploying WAR files.',query:'site:{domain} inurl:/manager/html OR intitle:"Apache Tomcat"',tags:['tomcat','java','admin']},
+  {id:39,name:'Metabase Analytics',cat:'admin',risk:'high',desc:'Metabase BI dashboard exposed.',query:'site:{domain} inurl:3000 intitle:"Metabase"',tags:['metabase','bi','analytics']},
+  {id:40,name:'Spring Boot Actuator',cat:'vuln',risk:'critical',desc:'Spring Actuator endpoints exposing environment, health, and secrets.',query:'site:{domain} inurl:/actuator/env OR inurl:/actuator/health',tags:['spring','java','actuator']},
+  {id:41,name:'SSO / OAuth Endpoint',cat:'login',risk:'medium',desc:'Single sign-on and OAuth endpoints.',query:'site:{domain} inurl:oauth OR inurl:sso OR inurl:saml',tags:['sso','oauth','saml']},
+  {id:42,name:'Password Reset Page',cat:'login',risk:'medium',desc:'Password reset flows.',query:'site:{domain} inurl:reset-password OR inurl:forgot-password',tags:['password','reset']},
+  {id:43,name:'Register / Signup',cat:'login',risk:'low',desc:'Registration and signup endpoints.',query:'site:{domain} inurl:register OR inurl:signup OR inurl:create-account',tags:['register','signup']},
+  {id:44,name:'Two-Factor Auth Pages',cat:'login',risk:'low',desc:'2FA/MFA verification pages.',query:'site:{domain} inurl:2fa OR inurl:mfa OR inurl:otp',tags:['2fa','mfa']},
+  {id:45,name:'API Auth Endpoints',cat:'login',risk:'medium',desc:'API authentication routes.',query:'site:{domain} inurl:/api/auth OR inurl:/api/login OR inurl:/api/token',tags:['api','auth']},
+  {id:46,name:'Basic Auth Prompts',cat:'login',risk:'high',desc:'HTTP Basic Auth protected pages.',query:'site:{domain} intitle:"401 Authorization Required"',tags:['basic-auth','401']},
+  {id:47,name:'Airflow Workflow UI',cat:'admin',risk:'high',desc:'Apache Airflow workflow orchestration UI.',query:'site:{domain} intitle:"Airflow" inurl:/dags',tags:['airflow','workflow','data']},
+  {id:48,name:'Spring Cloud Config',cat:'config',risk:'critical',desc:'Spring Cloud Config server endpoints.',query:'site:{domain} inurl:/actuator/configprops OR inurl:/env',tags:['spring','cloud','config']},
+  {id:49,name:'JBoss JMX Console',cat:'admin',risk:'critical',desc:'JBoss JMX management console.',query:'site:{domain} inurl:/jmx-console OR inurl:/web-console OR intitle:"JBoss"',tags:['jboss','java','admin']},
+  {id:50,name:'Redis Commander',cat:'database',risk:'critical',desc:'Redis Commander web interface.',query:'site:{domain} intitle:"Redis Commander"',tags:['redis','database','admin']},
+
+  // ─── SENSITIVE FILES ───
+  {id:51,name:'Exposed PDF Documents',cat:'files',risk:'medium',desc:'Public PDF files which may contain sensitive data.',query:'site:{domain} filetype:pdf',tags:['pdf','documents']},
+  {id:52,name:'Excel/CSV Data Files',cat:'files',risk:'high',desc:'Spreadsheet files with potentially sensitive data.',query:'site:{domain} filetype:xls OR filetype:xlsx OR filetype:csv',tags:['excel','data']},
+  {id:53,name:'SQL Dump Files',cat:'files',risk:'critical',desc:'Database dump files exposed publicly.',query:'site:{domain} filetype:sql OR inurl:dump.sql OR inurl:database.sql',tags:['sql','database','dump']},
+  {id:54,name:'XML Configuration Files',cat:'files',risk:'high',desc:'XML configs may contain credentials.',query:'site:{domain} filetype:xml inurl:config OR inurl:settings',tags:['xml','config']},
+  {id:55,name:'Private Key Files',cat:'files',risk:'critical',desc:'Private SSL/SSH keys exposed online.',query:'site:{domain} filetype:pem OR filetype:key OR filetype:ppk',tags:['ssh','ssl','key']},
+  {id:56,name:'Certificate Files',cat:'files',risk:'medium',desc:'SSL certificate files.',query:'site:{domain} filetype:crt OR filetype:cer OR filetype:p12',tags:['ssl','certificate']},
+  {id:57,name:'Password Files',cat:'files',risk:'critical',desc:'Files with password in the name or URL.',query:'site:{domain} inurl:password OR inurl:passwd OR inurl:credentials',tags:['password','credentials']},
+  {id:58,name:'Shadow/Passwd Files',cat:'files',risk:'critical',desc:'/etc/passwd or shadow file exposure.',query:'site:{domain} intext:"root:x:0:0:" OR intext:"daemon:x:"',tags:['passwd','shadow','unix']},
+  {id:59,name:'SSH Config Files',cat:'files',risk:'high',desc:'SSH configuration or known_hosts files.',query:'site:{domain} inurl:ssh OR inurl:known_hosts OR inurl:authorized_keys',tags:['ssh','config']},
+  {id:60,name:'Dockerfile Exposure',cat:'files',risk:'high',desc:'Dockerfiles may reveal internal architecture.',query:'site:{domain} inurl:Dockerfile OR inurl:docker-compose.yml',tags:['docker','config']},
+  {id:61,name:'Kubernetes Config',cat:'files',risk:'critical',desc:'Kubernetes config files with cluster access.',query:'site:{domain} inurl:kubeconfig OR filetype:yaml "kind: Secret"',tags:['kubernetes','k8s','secrets']},
+  {id:62,name:'Ansible Playbooks',cat:'files',risk:'high',desc:'Ansible configs with hosts and credentials.',query:'site:{domain} inurl:playbook.yml OR inurl:ansible.cfg',tags:['ansible','devops']},
+  {id:63,name:'Terraform State Files',cat:'files',risk:'critical',desc:'Terraform state files with infrastructure secrets.',query:'site:{domain} filetype:tfstate OR inurl:terraform.tfstate',tags:['terraform','cloud','iac']},
+  {id:64,name:'Jenkins Build Configs',cat:'files',risk:'high',desc:'Jenkinsfiles with pipeline secrets.',query:'site:{domain} inurl:Jenkinsfile OR filetype:groovy "pipeline"',tags:['jenkins','cicd']},
+  {id:65,name:'Exposed .htaccess',cat:'files',risk:'medium',desc:'.htaccess rules revealing server configuration.',query:'site:{domain} inurl:.htaccess',tags:['htaccess','apache']},
+  {id:66,name:'Web.config Exposure',cat:'files',risk:'high',desc:'ASP.NET web.config with connection strings.',query:'site:{domain} inurl:web.config filetype:config',tags:['aspnet','config','iis']},
+  {id:67,name:'PHP Source Code',cat:'files',risk:'high',desc:'Raw PHP source code exposed.',query:'site:{domain} filetype:php intitle:"index of" OR inurl:source',tags:['php','source']},
+  {id:68,name:'Python Scripts',cat:'files',risk:'medium',desc:'Python scripts exposed publicly.',query:'site:{domain} filetype:py OR ext:py',tags:['python','source']},
+  {id:69,name:'Readme / Changelog',cat:'files',risk:'low',desc:'README and CHANGELOG revealing versions.',query:'site:{domain} inurl:README.md OR inurl:CHANGELOG.md',tags:['readme','version']},
+  {id:70,name:'YAML Config Files',cat:'config',risk:'high',desc:'YAML configuration files that may contain secrets.',query:'site:{domain} filetype:yaml OR filetype:yml',tags:['yaml','config']},
+  {id:71,name:'INI & CFG Config Files',cat:'config',risk:'high',desc:'INI and CFG configuration files with credentials.',query:'site:{domain} filetype:ini OR filetype:cfg',tags:['ini','cfg','config']},
+  {id:72,name:'TOML Config Files',cat:'config',risk:'medium',desc:'TOML configuration files.',query:'site:{domain} filetype:toml',tags:['toml','config']},
+  {id:73,name:'Log Files',cat:'files',risk:'high',desc:'Application log files with verbose output.',query:'site:{domain} filetype:log',tags:['log','files']},
+  {id:74,name:'Backup Files (.bak)',cat:'files',risk:'critical',desc:'Backup files often containing full database or source.',query:'site:{domain} filetype:bak',tags:['backup','bak']},
+  {id:75,name:'Old/Archive Files',cat:'files',risk:'high',desc:'Old file versions and archives.',query:'site:{domain} filetype:old OR filetype:bak OR filetype:backup',tags:['old','archive','backup']},
+  {id:76,name:'ZIP Archives',cat:'files',risk:'high',desc:'ZIP archives which may contain source or data.',query:'site:{domain} filetype:zip',tags:['zip','archive']},
+
+  // ─── VULNERABILITIES ───
+  {id:80,name:'SQL Injection Candidates',cat:'vuln',risk:'critical',desc:'Pages with query parameters that may be SQLi-vulnerable.',query:'site:{domain} inurl:"?id=" OR inurl:"?cat=" OR inurl:"?page="',tags:['sqli','injection','parameter']},
+  {id:81,name:'Open Redirect Params',cat:'vuln',risk:'high',desc:'Redirect parameters common for open redirect vulns.',query:'site:{domain} inurl:"?redirect=" OR inurl:"?url=" OR inurl:"?next="',tags:['redirect','open-redirect']},
+  {id:82,name:'File Inclusion Params',cat:'vuln',risk:'critical',desc:'Parameters used in LFI/RFI attacks.',query:'site:{domain} inurl:"?file=" OR inurl:"?path=" OR inurl:"?include="',tags:['lfi','rfi','inclusion']},
+  {id:83,name:'SSRF Target Parameters',cat:'vuln',risk:'critical',desc:'Parameters that may be exploited for SSRF.',query:'site:{domain} inurl:"?target=" OR inurl:"?dest=" OR inurl:"?fetch="',tags:['ssrf','parameter']},
+  {id:84,name:'Exposed phpMyAdmin',cat:'vuln',risk:'critical',desc:'Unauthenticated phpMyAdmin access.',query:'site:{domain} inurl:/phpmyadmin intitle:"phpMyAdmin"',tags:['phpmyadmin','sqli']},
+  {id:85,name:'Shellshock Vulnerable CGI',cat:'vuln',risk:'critical',desc:'CGI scripts potentially vulnerable to Shellshock.',query:'site:{domain} inurl:cgi-bin filetype:cgi OR filetype:sh',tags:['shellshock','cgi']},
+  {id:86,name:'Struts2 Action Pages',cat:'vuln',risk:'critical',desc:'Apache Struts action endpoints.',query:'site:{domain} inurl:.action OR inurl:!action',tags:['struts','java']},
+  {id:87,name:'Exposed Upload Forms',cat:'vuln',risk:'high',desc:'File upload endpoints for RCE testing.',query:'site:{domain} inurl:upload OR intitle:"file upload"',tags:['upload','rce']},
+  {id:88,name:'IDOR Endpoints',cat:'vuln',risk:'high',desc:'Numeric IDs in URLs for IDOR testing.',query:'site:{domain} inurl:"/user/1" OR inurl:"/account/1" OR inurl:"/order/1"',tags:['idor','parameter']},
+  {id:89,name:'GraphQL Introspection',cat:'vuln',risk:'high',desc:'GraphQL endpoints for schema discovery.',query:'site:{domain} inurl:/graphql OR inurl:graphiql',tags:['graphql','api']},
+  {id:90,name:'CORS Misconfiguration',cat:'vuln',risk:'high',desc:'APIs with potential CORS misconfiguration.',query:'site:{domain} inurl:/api/ intitle:"Access-Control-Allow-Origin"',tags:['cors','api']},
+  {id:91,name:'Log4j JNDI Params',cat:'vuln',risk:'critical',desc:'Parameters likely used in Log4Shell exploitation.',query:'site:{domain} inurl:"?search=" OR inurl:"?query=" OR inurl:"?q="',tags:['log4j','jndi','log4shell']},
+  {id:92,name:'XXE Vulnerable Endpoints',cat:'vuln',risk:'high',desc:'XML input endpoints.',query:'site:{domain} inurl:xml inurl:upload OR inurl:parse',tags:['xxe','xml']},
+
+  // ─── CONFIGS & KEYS ───
+  {id:100,name:'AWS Credentials',cat:'config',risk:'critical',desc:'AWS access keys and secrets exposed.',query:'site:{domain} intext:"AKIA" OR intext:"aws_access_key_id"',tags:['aws','credentials','cloud']},
+  {id:101,name:'Google API Keys',cat:'config',risk:'critical',desc:'Google API keys exposed in web pages.',query:'site:{domain} intext:"AIza" OR intext:"google_api_key"',tags:['google','api','key']},
+  {id:102,name:'Private RSA Keys',cat:'config',risk:'critical',desc:'Private RSA key blocks exposed.',query:'site:{domain} intext:"-----BEGIN RSA PRIVATE KEY-----"',tags:['rsa','private-key','ssl']},
+  {id:103,name:'Private EC Keys',cat:'config',risk:'critical',desc:'Elliptic curve private keys.',query:'site:{domain} intext:"-----BEGIN EC PRIVATE KEY-----"',tags:['ec','private-key']},
+  {id:104,name:'OAuth Bearer Tokens',cat:'config',risk:'critical',desc:'OAuth access tokens in pages or docs.',query:'site:{domain} intext:"access_token" OR intext:"bearer"',tags:['oauth','token','api']},
+  {id:105,name:'Stripe API Keys',cat:'config',risk:'critical',desc:'Stripe payment API keys exposed.',query:'site:{domain} intext:"sk_live_" OR intext:"pk_live_"',tags:['stripe','payment','api']},
+  {id:106,name:'Slack Webhook Tokens',cat:'config',risk:'high',desc:'Slack webhook URLs exposed.',query:'site:{domain} intext:"hooks.slack.com/services"',tags:['slack','webhook']},
+  {id:107,name:'Twilio API Keys',cat:'config',risk:'high',desc:'Twilio auth tokens and SIDs.',query:'site:{domain} intext:"TWILIO_AUTH_TOKEN" OR intext:"AC" "twilio.com"',tags:['twilio','api','sms']},
+  {id:108,name:'Firebase Config',cat:'config',risk:'high',desc:'Firebase configuration with API keys.',query:'site:{domain} intext:"firebaseio.com" OR intext:"firebase-adminsdk"',tags:['firebase','google']},
+  {id:109,name:'JWT Secrets',cat:'config',risk:'critical',desc:'JWT secret keys in code or config.',query:'site:{domain} intext:"jwt_secret" OR intext:"JWT_SECRET" OR intext:"jwtSecret"',tags:['jwt','token','auth']},
+  {id:110,name:'Database Connection Strings',cat:'config',risk:'critical',desc:'Connection strings with credentials.',query:'site:{domain} intext:"mongodb://" OR intext:"mysql://" OR intext:"postgresql://"',tags:['database','connection','credentials']},
+  {id:111,name:'SendGrid API Keys',cat:'config',risk:'high',desc:'SendGrid email API keys.',query:'site:{domain} intext:"SG." OR intext:"sendgrid_api_key"',tags:['sendgrid','email','api']},
+  {id:112,name:'GitHub Personal Tokens',cat:'config',risk:'critical',desc:'GitHub PATs exposed in pages.',query:'site:{domain} intext:"ghp_" OR intext:"github_token"',tags:['github','token','scm']},
+  {id:113,name:'Heroku API Keys',cat:'config',risk:'high',desc:'Heroku API keys in config.',query:'site:{domain} intext:"HEROKU_API_KEY" OR intext:"heroku_token"',tags:['heroku','cloud','api']},
+  {id:114,name:'Shopify Access Tokens',cat:'config',risk:'high',desc:'Shopify admin API tokens.',query:'site:{domain} intext:"shpat_" OR intext:"X-Shopify-Access-Token"',tags:['shopify','api','ecommerce']},
+  {id:115,name:'Okta API Token',cat:'config',risk:'critical',desc:'Okta SSO API tokens.',query:'site:{domain} intext:"SSWS" OR intext:"okta_api_token"',tags:['okta','sso','api']},
+  {id:116,name:'Zendesk API Key',cat:'config',risk:'high',desc:'Zendesk support platform API credentials.',query:'site:{domain} intext:"zendesk_api_key" OR intext:"/api/v2/tickets"',tags:['zendesk','api','support']},
+  {id:117,name:'Mailgun API Key',cat:'config',risk:'high',desc:'Mailgun email API keys.',query:'site:{domain} intext:"key-" "mailgun" OR intext:"MAILGUN_API_KEY"',tags:['mailgun','email','api']},
+  {id:118,name:'Algolia API Key',cat:'config',risk:'high',desc:'Algolia search admin API keys.',query:'site:{domain} intext:"ALGOLIA_ADMIN_KEY" OR intext:"algolia_api_key"',tags:['algolia','search','api']},
+  {id:119,name:'.env File Exposure',cat:'config',risk:'critical',desc:'Environment files with DB credentials, API keys, secrets.',query:'site:{domain} filetype:env intext:DB_PASSWORD',tags:['env','credentials','secret']},
+  {id:120,name:'DB_PASSWORD in Pages',cat:'config',risk:'critical',desc:'Database password strings exposed in indexed content.',query:'site:{domain} intext:"DB_PASSWORD"',tags:['database','password','credentials']},
+  {id:121,name:'AWS Secret Key String',cat:'config',risk:'critical',desc:'AWS secret_access_key strings exposed.',query:'site:{domain} intext:"aws_secret_access_key"',tags:['aws','secret','cloud']},
+  {id:122,name:'Algolia Admin Key',cat:'config',risk:'critical',desc:'Algolia admin API keys.',query:'site:{domain} intext:"ALGOLIA_ADMIN_KEY"',tags:['algolia','api','admin']},
+  {id:123,name:'Twitch Client Secret',cat:'config',risk:'high',desc:'Twitch API client secrets.',query:'site:{domain} intext:"TWITCH_CLIENT_SECRET"',tags:['twitch','api','secret']},
+
+  // ─── DATABASES ───
+  {id:130,name:'Open MongoDB',cat:'database',risk:'critical',desc:'Unauthenticated MongoDB instances.',query:'site:{domain} inurl:27017 OR intitle:"MongoDB Server Status"',tags:['mongodb','nosql']},
+  {id:131,name:'Elasticsearch Open',cat:'database',risk:'critical',desc:'Exposed Elasticsearch clusters.',query:'site:{domain} inurl:9200 intitle:"Elasticsearch"',tags:['elasticsearch','nosql']},
+  {id:132,name:'Exposed Elasticsearch Indices',cat:'database',risk:'critical',desc:'List of indices in exposed Elasticsearch.',query:'site:{domain} inurl:/_cat/indices OR inurl:/_cluster/health',tags:['elasticsearch','indices']},
+  {id:133,name:'Redis Open',cat:'database',risk:'critical',desc:'Redis instances without authentication.',query:'site:{domain} inurl:6379 intitle:"redis"',tags:['redis','cache']},
+  {id:134,name:'CouchDB Interface',cat:'database',risk:'critical',desc:'CouchDB Fauxton web admin interface.',query:'site:{domain} inurl:5984 intitle:"CouchDB"',tags:['couchdb','nosql']},
+  {id:135,name:'InfluxDB Dashboard',cat:'database',risk:'high',desc:'InfluxDB time-series database.',query:'site:{domain} inurl:8086 intitle:"InfluxDB"',tags:['influxdb','timeseries']},
+  {id:136,name:'PostgreSQL Exposed',cat:'database',risk:'critical',desc:'Postgres management interfaces.',query:'site:{domain} inurl:5432 OR inurl:pgAdmin intitle:"pgAdmin"',tags:['postgres','sql']},
+  {id:137,name:'MySQL Exposed',cat:'database',risk:'critical',desc:'MySQL/MariaDB management interfaces.',query:'site:{domain} inurl:3306 OR inurl:mysql intitle:"MySQL"',tags:['mysql','sql']},
+  {id:138,name:'Cassandra Exposed',cat:'database',risk:'critical',desc:'Apache Cassandra NoSQL database.',query:'site:{domain} inurl:9042 OR intitle:"Cassandra"',tags:['cassandra','nosql']},
+  {id:139,name:'Database Backup Files',cat:'database',risk:'critical',desc:'Database backup files online.',query:'site:{domain} inurl:backup filetype:sql OR filetype:dump',tags:['backup','sql','dump']},
+  {id:140,name:'MDB Access Database',cat:'database',risk:'critical',desc:'Microsoft Access database files exposed.',query:'site:{domain} filetype:mdb',tags:['mdb','access','database']},
+  {id:141,name:'SQLite Database Files',cat:'database',risk:'critical',desc:'SQLite database files publicly accessible.',query:'site:{domain} filetype:sqlite OR filetype:db',tags:['sqlite','database']},
+  {id:142,name:'SQL Dump with Data',cat:'database',risk:'critical',desc:'SQL files containing INSERT INTO statements — real data.',query:'site:{domain} filetype:sql intext:"INSERT INTO"',tags:['sql','data','dump']},
+
+  // ─── NETWORK & INFRA ───
+  {id:150,name:'Network Devices Login',cat:'network',risk:'high',desc:'Router/switch/AP management interfaces.',query:'site:{domain} intitle:"Router" OR intitle:"Firewall" inurl:login',tags:['network','router']},
+  {id:151,name:'VPN Endpoints',cat:'network',risk:'medium',desc:'VPN login pages and endpoints.',query:'site:{domain} inurl:vpn OR inurl:openvpn OR intitle:"VPN"',tags:['vpn','network']},
+  {id:152,name:'SSH Web Terminals',cat:'network',risk:'high',desc:'Web-based SSH terminal access.',query:'site:{domain} intitle:"shellinabox" OR intitle:"webssh"',tags:['ssh','shell','web']},
+  {id:153,name:'Exposed Prometheus',cat:'network',risk:'high',desc:'Prometheus metrics endpoint exposed.',query:'site:{domain} inurl:/metrics intitle:"Prometheus"',tags:['prometheus','metrics']},
+  {id:154,name:'Nagios Monitoring',cat:'network',risk:'high',desc:'Nagios network monitoring interface.',query:'site:{domain} inurl:/nagios OR intitle:"Nagios Core"',tags:['nagios','monitoring']},
+  {id:155,name:'Zabbix Monitoring',cat:'network',risk:'high',desc:'Zabbix monitoring system dashboard.',query:'site:{domain} inurl:zabbix intitle:"Zabbix"',tags:['zabbix','monitoring']},
+  {id:156,name:'Exposed SMTP Config',cat:'network',risk:'medium',desc:'SMTP server configuration pages.',query:'site:{domain} inurl:smtp OR intext:"SMTP Server"',tags:['smtp','email','mail']},
+  {id:157,name:'FTP Configuration',cat:'network',risk:'high',desc:'FTP server configuration and login.',query:'site:{domain} inurl:ftp OR intitle:"FTP"',tags:['ftp','file-transfer']},
+  {id:158,name:'NetData Dashboard',cat:'network',risk:'medium',desc:'NetData real-time monitoring dashboard.',query:'site:{domain} inurl:19999 intitle:"netdata"',tags:['netdata','monitoring']},
+  {id:159,name:'Exposed API Gateway',cat:'network',risk:'high',desc:'API gateway management interfaces.',query:'site:{domain} inurl:8001 intitle:"Kong" OR inurl:/api/gateway',tags:['kong','api-gateway']},
+  {id:160,name:'SNMP Info Disclosure',cat:'network',risk:'medium',desc:'SNMP-related pages exposing device info.',query:'site:{domain} intext:"snmp" OR inurl:snmp intitle:"device"',tags:['snmp','network']},
+
+  // ─── API ───
+  {id:170,name:'API Documentation Exposed',cat:'api',risk:'medium',desc:'Swagger/OpenAPI documentation with endpoint details.',query:'site:{domain} inurl:swagger OR inurl:api-docs OR intitle:"Swagger UI"',tags:['swagger','openapi','docs']},
+  {id:171,name:'REST API Endpoints v1',cat:'api',risk:'medium',desc:'REST API v1 base endpoints.',query:'site:{domain} inurl:/api/v1',tags:['api','rest']},
+  {id:172,name:'REST API Endpoints v2',cat:'api',risk:'medium',desc:'REST API v2 base endpoints.',query:'site:{domain} inurl:/api/v2',tags:['api','rest']},
+  {id:173,name:'REST API Endpoints v3',cat:'api',risk:'medium',desc:'REST API v3 base endpoints.',query:'site:{domain} inurl:/api/v3',tags:['api','rest']},
+  {id:174,name:'API Key in URL',cat:'api',risk:'critical',desc:'API keys passed directly in URL parameters.',query:'site:{domain} inurl:"api_key=" OR inurl:"apikey=" OR inurl:"access_token="',tags:['api','key','url']},
+  {id:175,name:'Postman Collection Files',cat:'api',risk:'high',desc:'Postman collection files with API structure.',query:'site:{domain} filetype:json "postman" OR inurl:postman',tags:['postman','api','json']},
+  {id:176,name:'OpenAPI YAML Spec',cat:'api',risk:'medium',desc:'OpenAPI specification files.',query:'site:{domain} filetype:yaml "openapi:" OR filetype:json "swagger:"',tags:['openapi','swagger','api']},
+  {id:177,name:'API Tokens in JS',cat:'api',risk:'critical',desc:'API tokens hardcoded in JavaScript files.',query:'site:{domain} filetype:js "api_key" OR filetype:js "apiToken" OR filetype:js "accessToken"',tags:['javascript','api','token']},
+  {id:178,name:'Webhook URLs Exposed',cat:'api',risk:'high',desc:'Webhook endpoint URLs with secrets.',query:'site:{domain} inurl:webhook OR intext:"webhook_url" OR intext:"webhookUrl"',tags:['webhook','api']},
+  {id:179,name:'GraphQL Endpoint',cat:'api',risk:'high',desc:'GraphQL and GraphiQL endpoints.',query:'site:{domain} inurl:/graphql OR inurl:graphiql',tags:['graphql','api']},
+  {id:180,name:'OAuth Token Endpoint',cat:'api',risk:'medium',desc:'OAuth token endpoints.',query:'site:{domain} inurl:oauth/token OR inurl:/oauth2/token',tags:['oauth','token','auth']},
+
+  // ─── CLOUD ───
+  {id:190,name:'AWS S3 Bucket',cat:'cloud',risk:'critical',desc:'Open S3 buckets linked to domain.',query:'site:s3.amazonaws.com "{domain}"',tags:['aws','s3','storage']},
+  {id:191,name:'Azure Blob Storage',cat:'cloud',risk:'critical',desc:'Azure blob storage containers.',query:'site:blob.core.windows.net "{domain}"',tags:['azure','storage','cloud']},
+  {id:192,name:'Google Cloud Storage',cat:'cloud',risk:'critical',desc:'GCS buckets exposed.',query:'site:storage.googleapis.com "{domain}"',tags:['gcp','storage','cloud']},
+  {id:193,name:'DigitalOcean Spaces',cat:'cloud',risk:'high',desc:'DigitalOcean Spaces storage.',query:'site:digitaloceanspaces.com "{domain}"',tags:['digitalocean','storage']},
+  {id:194,name:'Firebase Storage',cat:'cloud',risk:'high',desc:'Firebase storage buckets.',query:'site:firebasestorage.googleapis.com "{domain}"',tags:['firebase','storage']},
+  {id:195,name:'Heroku App Exposure',cat:'cloud',risk:'medium',desc:'Heroku deployments related to domain.',query:'site:herokuapp.com "{domain}"',tags:['heroku','cloud','deployment']},
+  {id:196,name:'Netlify Deployment',cat:'cloud',risk:'medium',desc:'Netlify deployments for the domain.',query:'site:netlify.app "{domain}"',tags:['netlify','cloud','deployment']},
+  {id:197,name:'Vercel Deployment',cat:'cloud',risk:'medium',desc:'Vercel deployment previews.',query:'site:vercel.app "{domain}"',tags:['vercel','cloud','deployment']},
+  {id:198,name:'GitHub Pages',cat:'cloud',risk:'medium',desc:'GitHub Pages sites.',query:'site:github.io "{domain}"',tags:['github','pages','cloud']},
+  {id:199,name:'CloudFront Distribution',cat:'cloud',risk:'low',desc:'AWS CloudFront CDN distributions.',query:'site:cloudfront.net "{domain}"',tags:['aws','cloudfront','cdn']},
+  {id:200,name:'Exposed AWS Lambda',cat:'cloud',risk:'high',desc:'AWS Lambda function URLs exposed.',query:'site:{domain} inurl:lambda OR intext:"lambda.amazonaws.com"',tags:['aws','lambda','serverless']},
+  {id:201,name:'Exposed Google Docs',cat:'cloud',risk:'medium',desc:'Google Docs files mentioning the domain.',query:'site:docs.google.com "{domain}"',tags:['google','docs','cloud']},
+  {id:202,name:'Exposed Google Drive',cat:'cloud',risk:'medium',desc:'Google Drive files linked to domain.',query:'site:drive.google.com "{domain}"',tags:['google','drive','cloud']},
+
+  // ─── SOURCE CODE ───
+  {id:210,name:'GitHub Code Search',cat:'code',risk:'critical',desc:'Search GitHub for domain-related source code with secrets.',query:'"{domain}" password OR secret OR api_key OR token',tags:['github','code','secret']},
+  {id:211,name:'GitHub Config Files',cat:'code',risk:'critical',desc:'Config files with credentials on GitHub.',query:'"{domain}" filename:.env OR filename:config.php OR filename:settings.py',tags:['github','config']},
+  {id:212,name:'GitHub SSH Keys',cat:'code',risk:'critical',desc:'SSH keys committed to repositories.',query:'"{domain}" filename:id_rsa OR filename:id_dsa',tags:['github','ssh','key']},
+  {id:213,name:'GitHub AWS Keys',cat:'code',risk:'critical',desc:'AWS credentials committed to code.',query:'"{domain}" AKIA OR aws_access_key OR aws_secret',tags:['github','aws','credentials']},
+  {id:214,name:'GitHub JDBC URLs',cat:'code',risk:'critical',desc:'JDBC database connection strings on GitHub.',query:'"{domain}" jdbc: mysql OR postgresql OR oracle',tags:['github','jdbc','database']},
+  {id:215,name:'Pastebin Code Leak',cat:'code',risk:'high',desc:'Code pasted on Pastebin mentioning domain.',query:'site:pastebin.com "{domain}"',tags:['pastebin','code','leak']},
+  {id:216,name:'GitLab Code Search',cat:'code',risk:'critical',desc:'GitLab repositories with credentials.',query:'site:gitlab.com "{domain}" password OR secret',tags:['gitlab','code','credentials']},
+  {id:217,name:'Bitbucket Code Leak',cat:'code',risk:'critical',desc:'Bitbucket repos exposing secrets.',query:'site:bitbucket.org "{domain}" password OR secret',tags:['bitbucket','code']},
+  {id:218,name:'GitHub Org Code Search',cat:'code',risk:'critical',desc:'Search all repos in a GitHub organization for secrets.',query:'org:"{domain}" password OR secret OR api_key',tags:['github','org','secret']},
+  {id:219,name:'GitHub Commit Credentials',cat:'code',risk:'critical',desc:'Search commits for accidentally committed credentials.',query:'"{domain}" type:commit "credential" OR "password"',tags:['github','commit','credential']},
+  {id:220,name:'GitHub Merged PR Secrets',cat:'code',risk:'critical',desc:'Merged PRs that may have contained secrets.',query:'"{domain}" is:pr is:merged "secret" OR "password"',tags:['github','pr','secret']},
+  {id:221,name:'GitHub Workflow Secrets',cat:'code',risk:'critical',desc:'CI/CD workflow files exposing secrets.',query:'"{domain}" path:.github/workflows "secret" OR "token"',tags:['github','cicd','secret']},
+  {id:222,name:'GitHub Terraform Secrets',cat:'code',risk:'critical',desc:'Terraform configuration files with domain secrets.',query:'"{domain}" extension:tf "secret" OR "password"',tags:['github','terraform','secret']},
+  {id:223,name:'GitHub Docker Compose',cat:'code',risk:'high',desc:'Docker Compose files mentioning domain.',query:'"{domain}" filename:docker-compose.yml OR filename:Dockerfile',tags:['github','docker','config']},
+
+  // ─── CAMERAS & IoT ───
+  {id:230,name:'Exposed Webcams',cat:'camera',risk:'high',desc:'Unsecured IP cameras and webcams.',query:'site:{domain} inurl:/view.shtml OR intitle:"Live View" inurl:axis',tags:['camera','iot','webcam']},
+  {id:231,name:'Hikvision Cameras',cat:'camera',risk:'high',desc:'Hikvision IP camera admin panels.',query:'site:{domain} intitle:"Hikvision" OR inurl:"/ISAPI"',tags:['hikvision','camera']},
+  {id:232,name:'Dahua Cameras',cat:'camera',risk:'high',desc:'Dahua IP camera web interfaces.',query:'site:{domain} intitle:"Dahua" OR inurl:"/RPC2"',tags:['dahua','camera']},
+  {id:233,name:'IP Camera Default Login',cat:'camera',risk:'critical',desc:'IP cameras with default credential pages.',query:'site:{domain} intitle:"DVR" OR intitle:"NVR" intitle:"login"',tags:['dvr','nvr','camera']},
+  {id:234,name:'Smart Home Devices',cat:'iot',risk:'high',desc:'Smart home and IoT device interfaces.',query:'site:{domain} intitle:"Home Assistant" OR inurl:ha_login',tags:['home-assistant','iot','smart-home']},
+  {id:235,name:'Industrial SCADA Systems',cat:'iot',risk:'critical',desc:'SCADA/ICS industrial control systems.',query:'site:{domain} intitle:"SCADA" OR intitle:"HMI" OR inurl:scada',tags:['scada','ics','industrial']},
+  {id:236,name:'Building Management Systems',cat:'iot',risk:'high',desc:'BMS/BAS building automation systems.',query:'site:{domain} intitle:"Building Management" OR inurl:BMS',tags:['bms','building','automation']},
+  {id:237,name:'Printer Web Interfaces',cat:'iot',risk:'medium',desc:'Network printer admin web interfaces.',query:'site:{domain} intitle:"HP LaserJet" OR intitle:"Canon" inurl:manage',tags:['printer','iot']},
+  {id:238,name:'MODBUS/PROFINET',cat:'iot',risk:'critical',desc:'Industrial protocol-exposed devices.',query:'site:{domain} intext:"modbus" OR intext:"profinet" OR intext:"ethercat"',tags:['scada','modbus','industrial']},
+  {id:239,name:'PLC Web Interfaces',cat:'iot',risk:'critical',desc:'Programmable logic controller web GUIs.',query:'site:{domain} intitle:"Siemens PLC" OR intitle:"Allen Bradley"',tags:['plc','scada','ics']},
+  {id:240,name:'CCTV Control Systems',cat:'camera',risk:'high',desc:'CCTV VMS and DVR management.',query:'site:{domain} intitle:"Video Management" OR intitle:"DVR" OR inurl:cctv',tags:['cctv','dvr','camera']},
+
+  // ─── EMAIL & COMMS ───
+  {id:250,name:'Email Addresses Exposed',cat:'email',risk:'medium',desc:'Email addresses on the domain.',query:'site:{domain} intext:"@{domain}"',tags:['email','osint','contact']},
+  {id:251,name:'Email in PDFs',cat:'email',risk:'medium',desc:'Emails published in PDF documents.',query:'"@{domain}" filetype:pdf',tags:['email','pdf','osint']},
+  {id:252,name:'Email in Spreadsheets',cat:'email',risk:'high',desc:'Email lists in Excel/CSV files.',query:'"@{domain}" filetype:xls OR filetype:csv',tags:['email','excel','list']},
+  {id:253,name:'Mail Server Config Files',cat:'email',risk:'high',desc:'Mail server configuration files.',query:'site:{domain} inurl:exim.conf OR inurl:postfix OR inurl:sendmail.cf',tags:['exim','postfix','smtp']},
+  {id:254,name:'Slack Channel Archives',cat:'email',risk:'high',desc:'Public Slack workspace data.',query:'site:slack.com "{domain}"',tags:['slack','comms']},
+  {id:255,name:'Discord Server Links',cat:'email',risk:'low',desc:'Discord servers related to domain.',query:'site:discord.com "{domain}" OR site:discord.gg "{domain}"',tags:['discord','comms']},
+
+  // ─── SUBDOMAINS ───
+  {id:260,name:'Subdomain Enumeration',cat:'subdomain',risk:'medium',desc:'Enumerate subdomains via search engines.',query:'site:*.{domain} -www',tags:['subdomain','enum']},
+  {id:261,name:'Dev/Staging Subdomains',cat:'subdomain',risk:'high',desc:'Development and staging environments.',query:'site:{domain} inurl:dev OR inurl:staging OR inurl:test OR inurl:uat',tags:['dev','staging','test']},
+  {id:262,name:'API Subdomains',cat:'subdomain',risk:'medium',desc:'API subdomain discovery.',query:'site:api.{domain}',tags:['api','subdomain']},
+  {id:263,name:'Mail Subdomains',cat:'subdomain',risk:'low',desc:'Mail-related subdomains.',query:'site:mail.{domain} OR site:smtp.{domain}',tags:['mail','subdomain']},
+  {id:264,name:'VPN Subdomains',cat:'subdomain',risk:'medium',desc:'VPN-related subdomains.',query:'site:vpn.{domain} OR site:remote.{domain}',tags:['vpn','subdomain']},
+  {id:265,name:'Admin Subdomains',cat:'subdomain',risk:'high',desc:'Admin-related subdomains.',query:'site:admin.{domain} OR site:manage.{domain}',tags:['admin','subdomain']},
+  {id:266,name:'Internal Subdomains',cat:'subdomain',risk:'high',desc:'Internal/intranet subdomains indexed.',query:'site:intranet.{domain} OR site:internal.{domain}',tags:['intranet','internal','subdomain']},
+  {id:267,name:'CDN Subdomains',cat:'subdomain',risk:'low',desc:'CDN and static asset subdomains.',query:'site:cdn.{domain} OR site:static.{domain} OR site:assets.{domain}',tags:['cdn','assets','subdomain']},
+  {id:268,name:'Auth Subdomains',cat:'subdomain',risk:'medium',desc:'Authentication service subdomains.',query:'site:auth.{domain} OR site:sso.{domain} OR site:login.{domain}',tags:['auth','sso','subdomain']},
+  {id:269,name:'FTP Subdomains',cat:'subdomain',risk:'high',desc:'FTP-related subdomains.',query:'site:ftp.{domain} OR site:files.{domain}',tags:['ftp','files','subdomain']},
+  {id:270,name:'Support/Helpdesk Subdomains',cat:'subdomain',risk:'low',desc:'Support portal subdomains.',query:'site:support.{domain} OR site:help.{domain} OR site:desk.{domain}',tags:['support','helpdesk','subdomain']},
+  {id:271,name:'App/Beta/Old Subdomains',cat:'subdomain',risk:'medium',desc:'App, beta, and old subdomain variants.',query:'site:app.{domain} OR site:beta.{domain} OR site:old.{domain}',tags:['subdomain','app','beta']},
+  {id:272,name:'Shop/Store Subdomains',cat:'subdomain',risk:'medium',desc:'E-commerce subdomains.',query:'site:shop.{domain} OR site:store.{domain}',tags:['subdomain','shop','ecommerce']},
+  {id:273,name:'Portal/CDN Subdomains',cat:'subdomain',risk:'low',desc:'Portal and CDN subdomains.',query:'site:portal.{domain} OR site:cdn.{domain}',tags:['subdomain','portal','cdn']},
+  {id:274,name:'Git/Dev Tool Subdomains',cat:'subdomain',risk:'high',desc:'Git and developer tool subdomains.',query:'site:git.{domain} OR site:gitlab.{domain} OR site:jira.{domain}',tags:['git','dev','subdomain']},
+
+  // ─── SENSITIVE DATA ───
+  {id:280,name:'SSN / PII Exposure',cat:'sensitive',risk:'critical',desc:'Social security numbers and PII in documents.',query:'site:{domain} filetype:xls OR filetype:csv "social security" OR "ssn" OR "date of birth"',tags:['pii','ssn','gdpr']},
+  {id:281,name:'Credit Card Data',cat:'sensitive',risk:'critical',desc:'Credit card numbers in indexed content.',query:'site:{domain} intext:"card number" OR intext:"cvv" OR intext:"expiry" filetype:xls',tags:['credit-card','pci','payment']},
+  {id:282,name:'Medical Records',cat:'sensitive',risk:'critical',desc:'Medical data exposed online.',query:'site:{domain} filetype:pdf "patient" "diagnosis" OR "medical record"',tags:['medical','hipaa','pii']},
+  {id:283,name:'Internal HR Documents',cat:'sensitive',risk:'high',desc:'HR and employee records exposed.',query:'site:{domain} filetype:xls OR filetype:pdf "salary" OR "employee" OR "payroll"',tags:['hr','salary','employee']},
+  {id:284,name:'Financial Reports',cat:'sensitive',risk:'high',desc:'Internal financial data exposed.',query:'site:{domain} filetype:xls "revenue" OR "profit" intitle:"confidential"',tags:['finance','confidential']},
+  {id:285,name:'Contract Documents',cat:'sensitive',risk:'high',desc:'Legal and contract documents indexed.',query:'site:{domain} filetype:pdf "agreement" OR "contract" intitle:"confidential"',tags:['contract','legal']},
+  {id:286,name:'Passport/ID Scans',cat:'sensitive',risk:'critical',desc:'Identity document scans exposed.',query:'site:{domain} filetype:jpg OR filetype:png "passport" OR "national ID"',tags:['passport','id','pii']},
+  {id:287,name:'Network Diagrams',cat:'sensitive',risk:'high',desc:'Internal network topology diagrams.',query:'site:{domain} filetype:pdf "network diagram" OR "topology"',tags:['network','diagram','internal']},
+  {id:288,name:'Security Audit Reports',cat:'sensitive',risk:'critical',desc:'Security assessment reports exposed.',query:'site:{domain} filetype:pdf "penetration test" OR "vulnerability assessment" OR "security audit"',tags:['pentest','report','security']},
+
+  // ─── SOCIAL & PEOPLE ───
+  {id:290,name:'LinkedIn Employees',cat:'social',risk:'low',desc:'Find employees of the target on LinkedIn.',query:'site:linkedin.com inurl:"in/" "{domain}"',tags:['linkedin','employees','osint']},
+  {id:291,name:'LinkedIn Company Page',cat:'social',risk:'low',desc:'Company page on LinkedIn.',query:'site:linkedin.com/company "{domain}"',tags:['linkedin','company']},
+  {id:292,name:'Twitter / X Mentions',cat:'social',risk:'low',desc:'Twitter mentions of the domain.',query:'site:twitter.com OR site:x.com "{domain}"',tags:['twitter','social']},
+  {id:293,name:'Facebook Page',cat:'social',risk:'low',desc:'Facebook presence of the organization.',query:'site:facebook.com "{domain}"',tags:['facebook','social']},
+  {id:294,name:'GitHub Employees',cat:'social',risk:'medium',desc:'GitHub profiles of company employees.',query:'site:github.com intext:"{domain}" in:bio',tags:['github','employees']},
+  {id:295,name:'Glassdoor Tech Stack',cat:'social',risk:'medium',desc:'Tech stack reviews on Glassdoor.',query:'site:glassdoor.com "{domain}" technology OR stack OR infrastructure',tags:['glassdoor','techstack']},
+  {id:296,name:'Job Postings (Tech Stack)',cat:'social',risk:'medium',desc:'Job postings revealing internal tech stack.',query:'site:indeed.com OR site:linkedin.com/jobs "{domain}" developer OR engineer OR security',tags:['jobs','techstack','osint']},
+  {id:297,name:'Crunchbase Profile',cat:'social',risk:'low',desc:'Crunchbase company information.',query:'site:crunchbase.com "{domain}"',tags:['crunchbase','company','osint']},
+  {id:298,name:'Reddit Discussions',cat:'social',risk:'low',desc:'Reddit threads mentioning the domain.',query:'site:reddit.com "{domain}"',tags:['reddit','social']},
+
+  // ─── OSINT ───
+  {id:300,name:'Pastebin Credential Dumps',cat:'osint',risk:'critical',desc:'Domain credentials or data dumps on Pastebin.',query:'site:pastebin.com "{domain}" password OR credentials OR dump',tags:['pastebin','leak','credentials']},
+  {id:301,name:'HaveIBeenPwned Search',cat:'osint',risk:'high',desc:'Data breaches involving the domain.',query:'site:haveibeenpwned.com "{domain}"',tags:['breach','hibp','leak']},
+  {id:302,name:'Certificate Transparency',cat:'osint',risk:'medium',desc:'All SSL certs ever issued for domain via crt.sh.',query:'site:crt.sh "{domain}"',tags:['ssl','certificate','ct']},
+  {id:303,name:'WHOIS History',cat:'osint',risk:'low',desc:'WHOIS data and registrar info.',query:'site:whois.domaintools.com "{domain}"',tags:['whois','registrar','osint']},
+  {id:304,name:'VirusTotal Domain',cat:'osint',risk:'medium',desc:'VirusTotal analysis of domain reputation.',query:'site:virustotal.com "{domain}"',tags:['virustotal','malware','reputation']},
+  {id:305,name:'Shodan Domain Search',cat:'osint',risk:'high',desc:'Shodan hosts linked to domain.',query:'hostname:{domain}',tags:['shodan','network','host']},
+  {id:306,name:'Censys Domain Hosts',cat:'osint',risk:'high',desc:'Censys certificate/host search.',query:'parsed.names: {domain}',tags:['censys','ssl','hosts']},
+  {id:307,name:'Dun & Bradstreet Data',cat:'osint',risk:'low',desc:'Business data on D&B.',query:'site:dnb.com "{domain}"',tags:['dnb','business','osint']},
+  {id:308,name:'External Domain Mentions',cat:'osint',risk:'low',desc:'Third-party sites mentioning the domain.',query:'"{domain}" -site:{domain}',tags:['mentions','osint','external']},
+  {id:309,name:'Data Breach Mentions',cat:'osint',risk:'high',desc:'References to domain in breach or leak contexts.',query:'"{domain}" intext:"breach" OR intext:"leaked" OR intext:"hacked"',tags:['breach','leak','osint']},
+  {id:310,name:'CVE Associations',cat:'osint',risk:'high',desc:'CVE numbers associated with the domain or its tech.',query:'"{domain}" intext:"CVE-"',tags:['cve','vulnerability','osint']},
+  {id:311,name:'Phone Numbers on Domain',cat:'phone',risk:'medium',desc:'Phone numbers on the target domain.',query:'site:{domain} intext:"tel:" OR intext:"phone:" OR intext:"call us"',tags:['phone','contact','osint']},
+  {id:312,name:'Contact Pages',cat:'phone',risk:'low',desc:'Contact information pages.',query:'site:{domain} inurl:contact OR inurl:about intext:"@{domain}"',tags:['contact','email','osint']},
+  {id:313,name:'Skype/Teams Addresses',cat:'phone',risk:'low',desc:'Skype or Teams identifiers on domain.',query:'site:{domain} intext:"skype:" OR intext:"teams.microsoft.com"',tags:['skype','teams','contact']},
+  {id:314,name:'WhatsApp Business',cat:'phone',risk:'low',desc:'WhatsApp business links.',query:'site:{domain} inurl:wa.me OR intext:"whatsapp"',tags:['whatsapp','contact']},
+
+  // ─── WAYBACK / ARCHIVE ───
+  {id:320,name:'All Archived Pages',cat:'wayback',risk:'medium',desc:'All archived snapshots of the domain.',query:'http://web.archive.org/web/*/{domain}',tags:['wayback','archive']},
+  {id:321,name:'Archived Login Pages',cat:'wayback',risk:'high',desc:'Archived login pages with old endpoints.',query:'http://web.archive.org/web/*/login.{domain}',tags:['wayback','login']},
+  {id:322,name:'Archived Config Files',cat:'wayback',risk:'critical',desc:'Old config files in archive.',query:'http://web.archive.org/web/*/{domain}/*.env',tags:['wayback','config','env']},
+  {id:323,name:'Archived Admin Paths',cat:'wayback',risk:'critical',desc:'Historical admin paths revealing old endpoints.',query:'http://web.archive.org/web/*/{domain}/admin*',tags:['wayback','admin']},
+  {id:324,name:'Cached JavaScript Files',cat:'wayback',risk:'high',desc:'Old JS files with keys in archive.',query:'http://web.archive.org/web/*/{domain}/*.js',tags:['wayback','javascript']},
+  {id:325,name:'Archive.org Search',cat:'wayback',risk:'medium',desc:'Search domain on archive.org.',query:'site:archive.org "{domain}"',tags:['archive','wayback']},
+  {id:326,name:'CDX API — All URLs',cat:'wayback',risk:'medium',desc:'CDX API to retrieve all archived URLs as JSON.',query:'http://web.archive.org/cdx/search/cdx?url={domain}/*&output=json&fl=original,timestamp',tags:['wayback','cdx','api']},
+  {id:327,name:'CDX API — Subdomain Enum',cat:'wayback',risk:'medium',desc:'CDX wildcard to enumerate historical subdomains.',query:'http://web.archive.org/cdx/search/cdx?url=*.{domain}&output=text&fl=original&collapse=urlkey',tags:['wayback','cdx','subdomain']},
+  {id:328,name:'CDX API — Status 200',cat:'wayback',risk:'medium',desc:'CDX filter for only successful responses.',query:'http://web.archive.org/cdx/search/cdx?url={domain}/*&output=json&filter=statuscode:200',tags:['wayback','cdx','filter']},
+  {id:329,name:'CDX API — PHP Files',cat:'wayback',risk:'high',desc:'Historical PHP files that may have been removed.',query:'http://web.archive.org/cdx/search/cdx?url={domain}/*.php&output=json',tags:['wayback','cdx','php']},
+  {id:330,name:'CDX API — JS Files',cat:'wayback',risk:'high',desc:'Archived JavaScript files for analysis.',query:'http://web.archive.org/cdx/search/cdx?url={domain}/*.js&output=json',tags:['wayback','cdx','javascript']},
+  {id:331,name:'CDX API — SQL/Env Files',cat:'wayback',risk:'critical',desc:'Historical SQL dumps and env files.',query:'http://web.archive.org/cdx/search/cdx?url={domain}/*.sql&output=json',tags:['wayback','cdx','sql']},
+
+  // ─── YANDEX-SPECIFIC ───
+  {id:340,name:'Yandex host: Operator',cat:'yandex',risk:'medium',desc:'Yandex host: operator — strict domain match, different from site:.',query:'host:{domain}',tags:['yandex','host','recon']},
+  {id:341,name:'Yandex rhost: Backlinks',cat:'yandex',risk:'medium',desc:'Find pages linking to target domain. Unique Yandex backlink operator.',query:'rhost:{domain}',tags:['yandex','backlinks','rhost','osint']},
+  {id:342,name:'Yandex mime:pdf',cat:'yandex',risk:'medium',desc:'Yandex MIME type filter — PDF files on domain.',query:'site:{domain} mime:pdf',tags:['yandex','mime','pdf']},
+  {id:343,name:'Yandex mime: Office Docs',cat:'yandex',risk:'medium',desc:'Yandex MIME filter for Word/Excel/PowerPoint.',query:'site:{domain} mime:doc OR mime:xls OR mime:ppt',tags:['yandex','mime','office']},
+  {id:344,name:'Yandex mime: Archives',cat:'yandex',risk:'medium',desc:'Yandex MIME filter for ZIP/RAR archives.',query:'site:{domain} mime:zip OR mime:rar',tags:['yandex','mime','archive']},
+  {id:345,name:'Yandex mime:env/cfg',cat:'yandex',risk:'critical',desc:'Yandex MIME filter for env and config files.',query:'site:{domain} mime:env OR mime:cfg',tags:['yandex','mime','config']},
+  {id:346,name:'Yandex mime:sql',cat:'yandex',risk:'critical',desc:'Yandex MIME filter for SQL dump files.',query:'site:{domain} mime:sql',tags:['yandex','mime','sql']},
+  {id:347,name:'Yandex title: Login',cat:'yandex',risk:'medium',desc:'Yandex title: operator for login pages.',query:'title:"login" site:{domain}',tags:['yandex','title','login']},
+  {id:348,name:'Yandex url: Admin',cat:'yandex',risk:'high',desc:'Yandex url: operator to find admin URLs.',query:'url:admin site:{domain}',tags:['yandex','url','admin']},
+  {id:349,name:'Yandex date: Filter',cat:'yandex',risk:'low',desc:'Yandex date: operator to filter by date range.',query:'site:{domain} date:20240101,20241231',tags:['yandex','date','filter']},
+  {id:350,name:'Yandex lang: Filter',cat:'yandex',risk:'low',desc:'Yandex language filter for English pages.',query:'site:{domain} lang:en',tags:['yandex','language','filter']},
+  {id:351,name:'Yandex # Morphological',cat:'yandex',risk:'low',desc:'Yandex # operator forces exact word form without stemming.',query:'#admin #login site:{domain}',tags:['yandex','morphological','exact']},
+  {id:352,name:'Yandex mime:json/xml',cat:'yandex',risk:'medium',desc:'Yandex MIME filter for JSON/XML data files.',query:'site:{domain} mime:json OR mime:xml',tags:['yandex','mime','data']},
+  {id:353,name:'Yandex mime:log',cat:'yandex',risk:'high',desc:'Yandex MIME filter for log files.',query:'site:{domain} mime:log',tags:['yandex','mime','log']},
+
+  // ─── BING-SPECIFIC ───
+  {id:360,name:'Bing inbody: Password',cat:'bing',risk:'critical',desc:'Bing-specific inbody: operator to find passwords in page content.',query:'site:{domain} inbody:"password"',tags:['bing','inbody','password']},
+  {id:361,name:'Bing inbody: API Key',cat:'bing',risk:'critical',desc:'Bing-specific inbody: for API keys in page body.',query:'site:{domain} inbody:"API key" OR inbody:"apikey"',tags:['bing','inbody','api']},
+  {id:362,name:'Bing inbody: Connection String',cat:'bing',risk:'critical',desc:'Database connection strings in body text.',query:'site:{domain} inbody:"connectionstring" OR inbody:"connectionString"',tags:['bing','inbody','database']},
+  {id:363,name:'Bing inbody: Secret',cat:'bing',risk:'critical',desc:'Secret strings in page body via Bing.',query:'site:{domain} inbody:"secret" OR inbody:"private key"',tags:['bing','inbody','secret']},
+  {id:364,name:'Bing inbody: Token',cat:'bing',risk:'high',desc:'Auth tokens in page body via Bing.',query:'site:{domain} inbody:"access_token" OR inbody:"bearer"',tags:['bing','inbody','token']},
+  {id:365,name:'Bing feed: Operator',cat:'bing',risk:'low',desc:'Bing feed: operator to find RSS/Atom feeds.',query:'feed:{domain}',tags:['bing','feed','rss']},
+  {id:366,name:'Bing hasfeed: Operator',cat:'bing',risk:'low',desc:'Pages with feeds on domain via Bing.',query:'hasfeed:{domain}',tags:['bing','feed','rss']},
+  {id:367,name:'Bing contains:pdf',cat:'bing',risk:'medium',desc:'Bing contains: to find pages with PDF links.',query:'contains:pdf site:{domain}',tags:['bing','contains','pdf']},
+  {id:368,name:'Bing loc: Geo Filter',cat:'bing',risk:'low',desc:'Bing geographic location filter.',query:'loc:US "{domain}"',tags:['bing','location','geo']},
+  {id:369,name:'Bing inanchor: Login',cat:'bing',risk:'medium',desc:'Bing inanchor: for anchor text containing login.',query:'inanchor:login site:{domain}',tags:['bing','inanchor','login']},
+
+  // ─── DUCKDUCKGO BANGS ───
+  {id:370,name:'DDG !g — Google',cat:'ddg',risk:'low',desc:'DuckDuckGo !g bang to redirect search to Google.',query:'!g site:{domain}',tags:['ddg','bang','google']},
+  {id:371,name:'DDG !bing — Bing',cat:'ddg',risk:'low',desc:'DuckDuckGo !bing bang for Bing search.',query:'!bing site:{domain}',tags:['ddg','bang','bing']},
+  {id:372,name:'DDG !gh — GitHub',cat:'ddg',risk:'medium',desc:'DuckDuckGo !gh bang for GitHub code search.',query:'!gh "{domain}"',tags:['ddg','bang','github']},
+  {id:373,name:'DDG !shodan — Shodan',cat:'ddg',risk:'medium',desc:'DuckDuckGo !shodan bang for Shodan search.',query:'!shodan hostname:{domain}',tags:['ddg','bang','shodan']},
+  {id:374,name:'DDG !archive — Wayback',cat:'ddg',risk:'medium',desc:'DuckDuckGo !archive bang for Wayback Machine.',query:'!archive {domain}',tags:['ddg','bang','archive']},
+  {id:375,name:'DDG !virustotal',cat:'ddg',risk:'medium',desc:'DuckDuckGo !virustotal for reputation check.',query:'!virustotal {domain}',tags:['ddg','bang','virustotal']},
+  {id:376,name:'DDG !censys — Censys',cat:'ddg',risk:'medium',desc:'DuckDuckGo !censys bang.',query:'!censys hostname:{domain}',tags:['ddg','bang','censys']},
+  {id:377,name:'DDG !reddit — Reddit',cat:'ddg',risk:'low',desc:'DuckDuckGo !reddit bang.',query:'!reddit "{domain}"',tags:['ddg','bang','reddit']},
+  {id:378,name:'DDG !linkedin — LinkedIn',cat:'ddg',risk:'low',desc:'DuckDuckGo !linkedin bang.',query:'!linkedin "{domain}"',tags:['ddg','bang','linkedin']},
+  {id:379,name:'DDG !news — News',cat:'ddg',risk:'low',desc:'DuckDuckGo !news bang for news search.',query:'!news "{domain}"',tags:['ddg','bang','news']},
+
+  // ─── CENSYS-SPECIFIC ───
+  {id:380,name:'Censys TLS Subject CN',cat:'network',risk:'medium',desc:'Find hosts via TLS certificate Common Name.',query:'services.tls.certificates.leaf_data.subject.common_name:"{domain}"',tags:['censys','tls','certificate']},
+  {id:381,name:'Censys Wildcard TLS',cat:'network',risk:'medium',desc:'Wildcard TLS certificate discovery in Censys.',query:'services.tls.certificates.leaf_data.subject.common_name:"*.{domain}"',tags:['censys','tls','wildcard']},
+  {id:382,name:'Censys SAN Names',cat:'network',risk:'medium',desc:'Domain in certificate Subject Alternative Names.',query:'services.tls.certificates.leaf_data.names:"{domain}"',tags:['censys','san','certificate']},
+  {id:383,name:'Censys HTTPS + Cert',cat:'network',risk:'medium',desc:'HTTPS hosts with matching domain certificate.',query:'services.tls.certificates.leaf_data.names:"{domain}" and services.port:443',tags:['censys','https','tls']},
+  {id:384,name:'Censys Admin via Cert',cat:'admin',risk:'high',desc:'Admin pages on certified domain hosts.',query:'services.http.response.html_title:"admin" and services.tls.certificates.leaf_data.subject.common_name:"{domain}"',tags:['censys','admin','tls']},
+  {id:385,name:'Censys Login via Cert',cat:'login',risk:'high',desc:'Login pages on certified domain hosts.',query:'services.http.response.html_title:"login" and services.tls.certificates.leaf_data.subject.common_name:"{domain}"',tags:['censys','login','tls']},
+  {id:386,name:'Censys MongoDB via Cert',cat:'database',risk:'critical',desc:'Open MongoDB on hosts with domain certificate.',query:'services.port:27017 and services.tls.certificates.leaf_data.subject.common_name:"{domain}"',tags:['censys','mongodb','database']},
+  {id:387,name:'Censys Redis via Cert',cat:'database',risk:'critical',desc:'Open Redis on certified domain hosts.',query:'services.port:6379 and services.tls.certificates.leaf_data.subject.common_name:"{domain}"',tags:['censys','redis','database']},
+  {id:388,name:'Censys ASN Lookup',cat:'network',risk:'medium',desc:'Find hosts by autonomous system name.',query:'autonomous_system.name:"{domain}" and services.port:443',tags:['censys','asn','network']},
+  {id:389,name:'Censys Kibana/Grafana',cat:'admin',risk:'critical',desc:'Kibana and Grafana dashboards on domain hosts.',query:'services.http.response.html_title:"Kibana" and services.tls.certificates.leaf_data.subject.common_name:"{domain}"',tags:['censys','kibana','grafana']},
+
+  // ─── FOFA-SPECIFIC ───
+  {id:390,name:'FOFA Host Search',cat:'fofa',risk:'medium',desc:'FOFA host= operator for domain search.',query:'host="{domain}"',tags:['fofa','host','network']},
+  {id:391,name:'FOFA SSL Certificate',cat:'fofa',risk:'medium',desc:'FOFA certificate subject search.',query:'cert.subject="{domain}"',tags:['fofa','ssl','cert']},
+  {id:392,name:'FOFA Admin Pages',cat:'fofa',risk:'high',desc:'FOFA search for admin pages on domain.',query:'title="admin" && host="{domain}"',tags:['fofa','admin','title']},
+  {id:393,name:'FOFA Login Pages',cat:'fofa',risk:'medium',desc:'FOFA login page detection.',query:'title="login" && host="{domain}"',tags:['fofa','login','title']},
+  {id:394,name:'FOFA Dashboard Pages',cat:'fofa',risk:'high',desc:'FOFA dashboard detection.',query:'title="dashboard" && host="{domain}"',tags:['fofa','dashboard','admin']},
+  {id:395,name:'FOFA MongoDB Open',cat:'fofa',risk:'critical',desc:'Open MongoDB via FOFA port search.',query:'port="27017" && host="{domain}"',tags:['fofa','mongodb','port']},
+  {id:396,name:'FOFA Redis Open',cat:'fofa',risk:'critical',desc:'Open Redis via FOFA port search.',query:'port="6379" && host="{domain}"',tags:['fofa','redis','port']},
+  {id:397,name:'FOFA Elasticsearch',cat:'fofa',risk:'critical',desc:'Elasticsearch instances on domain via FOFA.',query:'port="9200" && host="{domain}"',tags:['fofa','elasticsearch','port']},
+  {id:398,name:'FOFA WordPress',cat:'fofa',risk:'medium',desc:'WordPress installations on domain via FOFA.',query:'app="WordPress" && host="{domain}"',tags:['fofa','wordpress','cms']},
+  {id:399,name:'FOFA Jenkins CI',cat:'fofa',risk:'high',desc:'Jenkins CI/CD instances on domain.',query:'app="Jenkins" && host="{domain}"',tags:['fofa','jenkins','cicd']},
+  {id:400,name:'FOFA RDP Exposed',cat:'fofa',risk:'high',desc:'RDP services exposed via FOFA.',query:'port="3389" && host="{domain}"',tags:['fofa','rdp','remote']},
+  {id:401,name:'FOFA VNC Exposed',cat:'fofa',risk:'critical',desc:'VNC servers exposed via FOFA.',query:'port="5900" && host="{domain}"',tags:['fofa','vnc','remote']},
+  {id:402,name:'FOFA SSH Exposed',cat:'fofa',risk:'medium',desc:'SSH services via FOFA.',query:'port="22" && host="{domain}"',tags:['fofa','ssh','port']},
+  {id:403,name:'FOFA FTP Exposed',cat:'fofa',risk:'high',desc:'FTP services via FOFA.',query:'port="21" && host="{domain}"',tags:['fofa','ftp','port']},
+  {id:404,name:'FOFA Phpmyadmin',cat:'fofa',risk:'critical',desc:'phpMyAdmin on domain via FOFA.',query:'title="phpMyAdmin" && host="{domain}"',tags:['fofa','phpmyadmin','database']},
+
+  // ─── ZOOMEYE-SPECIFIC ───
+  {id:410,name:'ZoomEye Hostname',cat:'network',risk:'medium',desc:'ZoomEye hostname search for target domain.',query:'hostname:{domain}',tags:['zoomeye','hostname','network']},
+  {id:411,name:'ZoomEye SSL Cert',cat:'network',risk:'medium',desc:'ZoomEye SSL certificate search.',query:'ssl:"{domain}"',tags:['zoomeye','ssl','cert']},
+  {id:412,name:'ZoomEye WordPress',cat:'admin',risk:'medium',desc:'WordPress on domain via ZoomEye.',query:'app:"WordPress" hostname:{domain}',tags:['zoomeye','wordpress','cms']},
+  {id:413,name:'ZoomEye Jenkins',cat:'admin',risk:'high',desc:'Jenkins on domain via ZoomEye.',query:'app:"Jenkins" hostname:{domain}',tags:['zoomeye','jenkins','cicd']},
+  {id:414,name:'ZoomEye MongoDB',cat:'database',risk:'critical',desc:'MongoDB instances on domain via ZoomEye.',query:'port:27017 hostname:{domain}',tags:['zoomeye','mongodb','database']},
+  {id:415,name:'ZoomEye Redis',cat:'database',risk:'critical',desc:'Redis instances on domain via ZoomEye.',query:'port:6379 hostname:{domain}',tags:['zoomeye','redis','database']},
+  {id:416,name:'ZoomEye Elasticsearch',cat:'database',risk:'critical',desc:'Elasticsearch on domain via ZoomEye.',query:'port:9200 hostname:{domain}',tags:['zoomeye','elasticsearch','database']},
+  {id:417,name:'ZoomEye service:http',cat:'network',risk:'medium',desc:'HTTP services on target domain via ZoomEye.',query:'service:http hostname:{domain}',tags:['zoomeye','http','service']},
+  {id:418,name:'ZoomEye keywords: Admin',cat:'network',risk:'medium',desc:'Search HTML meta keywords on ZoomEye.',query:'keywords:"admin" hostname:{domain}',tags:['zoomeye','keywords','meta']},
+  {id:419,name:'ZoomEye title: Login',cat:'login',risk:'medium',desc:'Login pages via ZoomEye title search.',query:'title:"login" hostname:{domain}',tags:['zoomeye','login','title']},
+  {id:420,name:'ZoomEye RDP Exposed',cat:'network',risk:'high',desc:'RDP on domain via ZoomEye.',query:'port:3389 hostname:{domain}',tags:['zoomeye','rdp','remote']},
+
+  // ─── GREP.APP ───
+  {id:430,name:'Grep: Domain in .env',cat:'grep',risk:'critical',desc:'Search Grep.app for domain in .env files.',query:'"{domain}" path:**.env',tags:['grep','env','config']},
+  {id:431,name:'Grep: Password Pattern (Python)',cat:'grep',risk:'critical',desc:'Regex for hardcoded passwords in Python code.',query:'/password.*=.*[\'"].+[\'"]/ lang:python',tags:['grep','regex','password']},
+  {id:432,name:'Grep: API Key Pattern',cat:'grep',risk:'critical',desc:'Regex for API key assignments.',query:'/api[_-]?key.*=.*[\'"].{20,}[\'"]/',tags:['grep','regex','api']},
+  {id:433,name:'Grep: Private Key Headers',cat:'grep',risk:'critical',desc:'Regex matching any private key header.',query:'/BEGIN (RSA|EC|DSA) PRIVATE KEY/',tags:['grep','regex','private-key']},
+  {id:434,name:'Grep: AWS Key IDs',cat:'grep',risk:'critical',desc:'Regex for AWS access key IDs (AKIA prefix).',query:'/AKIA[0-9A-Z]{16}/',tags:['grep','regex','aws']},
+  {id:435,name:'Grep: Bearer Tokens',cat:'grep',risk:'critical',desc:'Regex for Bearer authentication tokens.',query:'/Authorization:\\s*Bearer\\s+[A-Za-z0-9._-]{20,}/',tags:['grep','regex','bearer','token']},
+  {id:436,name:'Grep: MongoDB Atlas URI',cat:'grep',risk:'critical',desc:'Regex for MongoDB Atlas connection URIs.',query:'/mongodb\\+srv:\\/\\/.+@.+\\.mongodb\\.net/',tags:['grep','regex','mongodb']},
+  {id:437,name:'Grep: Domain in Config',cat:'grep',risk:'high',desc:'Search Grep.app for domain in config files.',query:'"{domain}" path:**config*',tags:['grep','config','domain']},
+  {id:438,name:'Grep: Domain in Secrets',cat:'grep',risk:'critical',desc:'Domain found in secret/credential named files.',query:'"{domain}" path:**secret*',tags:['grep','secret','credential']},
+  {id:439,name:'Grep: Domain in Python',cat:'grep',risk:'medium',desc:'Domain appearing in Python source code.',query:'"{domain}" lang:python',tags:['grep','python','code']},
+  {id:440,name:'Grep: Domain in JS',cat:'grep',risk:'medium',desc:'Domain in JavaScript source code.',query:'"{domain}" lang:javascript',tags:['grep','javascript','code']},
+  {id:441,name:'Grep: Domain in YAML',cat:'grep',risk:'high',desc:'Domain appearing in YAML configuration files.',query:'"{domain}" lang:yaml',tags:['grep','yaml','config']},
+  {id:442,name:'Grep: Domain in SQL',cat:'grep',risk:'critical',desc:'Domain in SQL files.',query:'"{domain}" path:**.sql',tags:['grep','sql','database']},
+  {id:443,name:'Grep: SMTP Password Regex',cat:'grep',risk:'critical',desc:'Regex for SMTP password configurations.',query:'/smtp.*password/i',tags:['grep','regex','smtp']},
+  {id:444,name:'Grep: DB Password Regex',cat:'grep',risk:'critical',desc:'Regex for database password patterns.',query:'/db_password.*=.*[\'"].+["\']/i',tags:['grep','regex','database']},
+  {id:445,name:'Grep: Domain in Shell Scripts',cat:'grep',risk:'high',desc:'Domain in shell scripts (may contain credentials).',query:'"{domain}" lang:shell',tags:['grep','shell','script']},
+  {id:446,name:'Grep: Domain in Dockerfiles',cat:'grep',risk:'medium',desc:'Domain in Dockerfile or docker-compose.',query:'"{domain}" lang:dockerfile',tags:['grep','docker','devops']},
+
+  // ─── MLflow / Data Science ───
+  {id:450,name:'Exposed MLflow',cat:'admin',risk:'medium',desc:'MLflow ML experiment tracking UI.',query:'site:{domain} inurl:5000 intitle:"MLflow"',tags:['mlflow','ml','data']},
+  {id:451,name:'NTLM Auth Hash Exposure',cat:'vuln',risk:'critical',desc:'NTLM hash challenges leaking Windows auth info.',query:'site:{domain} intitle:"401 Unauthorized" intext:"NTLM"',tags:['ntlm','windows','auth']},
+  {id:452,name:'Exposed Drone CI',cat:'admin',risk:'high',desc:'Drone CI/CD system exposed.',query:'site:{domain} inurl:8080 intitle:"Drone"',tags:['drone','cicd']},
+  {id:453,name:'Prometheus Metrics',cat:'network',risk:'high',desc:'Prometheus /metrics endpoint with internal data.',query:'site:{domain} inurl:/metrics intext:"go_goroutines"',tags:['prometheus','metrics','internal']},
+  {id:454,name:'Error Stack Traces',cat:'info-exposure',risk:'high',desc:'Stack traces exposed in error pages.',query:'site:{domain} intext:"Stack trace:" OR intext:"Traceback (most recent"',tags:['error','stacktrace','debug']},
+  {id:455,name:'Debug Mode On',cat:'info-exposure',risk:'critical',desc:'Framework debug mode enabled exposing internals.',query:'site:{domain} intext:"DEBUG = True" OR intext:"debug: true"',tags:['debug','django','framework']},
+  {id:456,name:'PHP Error Messages',cat:'info-exposure',risk:'high',desc:'PHP fatal errors revealing file paths and code.',query:'site:{domain} intext:"Fatal error:" intext:"on line"',tags:['php','error','fatal']},
+  {id:457,name:'MySQL Error Messages',cat:'info-exposure',risk:'high',desc:'MySQL errors revealing queries and schema.',query:'site:{domain} intext:"Warning: mysql_" OR intext:"You have an error in your SQL syntax"',tags:['mysql','error','sql']},
+  {id:458,name:'Oracle DB Errors',cat:'info-exposure',risk:'high',desc:'Oracle database error codes in pages.',query:'site:{domain} intext:"ORA-" intext:"oracle"',tags:['oracle','error','database']},
+];
+
+// ════════════════════════════════════════════════════════
+// POWER COMBOS
+// ════════════════════════════════════════════════════════
+const COMBOS = [
+  {title:'🔍 Google: Full Domain Recon Chain',note:'Run these sequentially for comprehensive target profiling.',code:`site:{domain} -www (all indexed)\nsite:*.{domain} -www (subdomains)\nsite:{domain} filetype:pdf OR filetype:docx OR filetype:xls\nsite:{domain} intitle:"index of" (directories)\nsite:{domain} inurl:admin OR inurl:login`},
+  {title:'🔍 Google: Credential Hunting',note:'Hunt for exposed credentials across the target domain.',code:`site:{domain} filetype:env intext:DB_PASSWORD\nsite:{domain} intext:"BEGIN RSA PRIVATE KEY"\nsite:{domain} intext:"aws_access_key_id"\nsite:{domain} intext:"api_key" filetype:js\nsite:{domain} filetype:sql intext:"INSERT INTO"`},
+  {title:'🔍 Google: Cloud Storage Bucket Hunt',note:'Find open cloud storage buckets linked to domain.',code:`site:s3.amazonaws.com "{domain}"\nsite:blob.core.windows.net "{domain}"\nsite:storage.googleapis.com "{domain}"\nsite:digitaloceanspaces.com "{domain}"\nsite:firebasestorage.googleapis.com "{domain}"`},
+  {title:'🔍 Google: Error & Debug Exposure',note:'Find verbose errors revealing the tech stack.',code:`site:{domain} intext:"Warning: mysql"\nsite:{domain} intext:"Fatal error:" intext:"on line"\nsite:{domain} intext:"Stack trace:"\nsite:{domain} intext:"DEBUG = True"\nsite:{domain} intext:"ORA-"`},
+  {title:'🔍 Google: API & Swagger Hunt',note:'Map out API endpoints and documentation.',code:`site:{domain} inurl:swagger OR inurl:swagger-ui\nsite:{domain} inurl:graphql OR inurl:graphiql\nsite:{domain} inurl:/api/v1 OR inurl:/api/v2 OR inurl:/api/v3\nsite:{domain} inurl:api-docs OR inurl:openapi\nsite:{domain} filetype:json "swagger":`},
+  {title:'🔍 Google: CMS & Tech Detection',note:'Identify what technology stack the target runs.',code:`site:{domain} inurl:wp-admin OR inurl:wp-content\nsite:{domain} inurl:phpmyadmin\nsite:{domain} inurl:Joomla OR inurl:drupal\nsite:{domain} inurl:/actuator/health (Spring Boot)\nsite:{domain} intitle:"Grafana" OR intitle:"Kibana"`},
+  {title:'🐙 GitHub: Secret Hunting Chain',note:'Find accidentally committed secrets on GitHub.',code:`"{domain}" filename:.env "SECRET_KEY" OR "API_KEY"\n"{domain}" extension:pem "BEGIN RSA PRIVATE KEY"\n"{domain}" filename:credentials.json "client_secret"\n"{domain}" path:.github/workflows "AWS_SECRET"\n"{domain}" type:commit "password" OR "credential"`},
+  {title:'📡 Shodan: Full Network Exposure',note:'Comprehensive Shodan scan for domain infrastructure.',code:`hostname:{domain}\nssl.cert.subject.cn:"*.{domain}"\nhttp.title:"admin" hostname:{domain}\nport:27017 hostname:{domain} (MongoDB)\nport:6379 hostname:{domain} (Redis)\nport:9200 hostname:{domain} (Elasticsearch)`},
+  {title:'🇷🇺 Yandex: Dual Engine Recon',note:'Use both yandex.com and yandex.ru for maximum coverage.',code:`site:{domain} (all pages)\nhost:{domain} mime:pdf (MIME filter — Yandex only)\nrhost:{domain} (backlinks — Yandex only)\nsite:{domain} title:"login" OR title:"admin"\nsite:{domain} intext:"DB_PASSWORD"\nurl:admin site:{domain}`},
+  {title:'🔭 Censys: TLS Certificate Mining',note:'Use certificate transparency logs to map infrastructure.',code:`services.tls.certificates.leaf_data.subject.common_name:"*.{domain}"\nservices.tls.certificates.leaf_data.names:"{domain}" and services.port:443\nservices.http.response.html_title:"admin" and services.tls.certificates.leaf_data.subject.common_name:"{domain}"\nservices.port:27017 and services.tls.certificates.leaf_data.subject.common_name:"{domain}"`},
+  {title:'📦 Archive.org: Historical OSINT',note:'Dig into Wayback Machine for deleted content.',code:`web.archive.org/web/*/{domain}/admin*\nweb.archive.org/web/*/{domain}/*.env\ncdx?url=*.{domain}&output=json&fl=original&collapse=urlkey\ncdx?url={domain}/*&filter=statuscode:200&output=json\ncdx?url={domain}/*.php&output=json`},
+  {title:'🔎 Grep.app: Hardcoded Secrets',note:'Regex patterns for finding credentials in source code.',code:`/password\\s*=\\s*['"]{dot}+['"]/\n/api[_-]?key\\s*[=:]\\s*['"]{dot}{20,}['"]/\n/BEGIN (RSA|EC|DSA) PRIVATE KEY/\n/AKIA[0-9A-Z]{16}/\n/Authorization:\\s*Bearer\\s+[A-Za-z0-9._-]{20,}/\n"{domain}" path:**.env`},
+  {title:'🔵 FOFA: Full Domain Sweep',note:'FOFA operators for comprehensive domain exposure.',code:`host="{domain}"\ncert.subject="{domain}"\ntitle="admin" && host="{domain}"\nport="27017" && host="{domain}"\nport="9200" && host="{domain}"\napp="WordPress" && host="{domain}"`},
+  {title:'⚡ Multi-Engine OSINT Chain',note:'Cross-engine workflow for complete target profiling.',code:`1. site:{domain} -www (Google)\n2. hostname:{domain} (Shodan)\n3. ssl.cert.subject.cn:"*.{domain}" (Censys)\n4. host="{domain}" (FOFA)\n5. "{domain}" filename:.env (GitHub)\n6. rhost:{domain} (Yandex backlinks)\n7. cdx?url=*.{domain}&output=json (Archive CDX API)`},
+  {title:'🔓 Vulnerability Param Hunt',note:'Find parameters commonly exploited for web vulnerabilities.',code:`site:{domain} inurl:"?id=" OR inurl:"?cat=" (SQLi)\nsite:{domain} inurl:"?redirect=" OR inurl:"?url=" (OpenRedirect)\nsite:{domain} inurl:"?file=" OR inurl:"?path=" (LFI)\nsite:{domain} inurl:"?target=" OR inurl:"?dest=" (SSRF)\nsite:{domain} inurl:/graphql OR inurl:graphiql (GraphQL)`},
+  {title:'📧 Email & Comms OSINT',note:'Extract email addresses, staff, and communication channels.',code:`"@{domain}" filetype:pdf\n"@{domain}" filetype:xls OR filetype:csv\nsite:linkedin.com inurl:"in/" "{domain}"\nsite:{domain} intext:"@{domain}"\nsite:pastebin.com "{domain}" password\nsite:slack.com "{domain}"`},
+];
+
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+let currentDomain = '';
+let currentEngine = 'google';
+let currentCat = 'all';
+
+// ════════════════════════════════════════════════════════
+// QUERY BUILDING
+// ════════════════════════════════════════════════════════
+function buildQuery(dork){
+  const d = currentDomain || 'example.com';
+  return dork.query.replace(/\{domain\}/g, d);
+}
+
+function formatQuery(rawQuery){
+  const d = currentDomain || 'example.com';
+  return rawQuery
+    .replace(/\{domain\}/g, `<span class="domain-hl">${d}</span>`)
+    .replace(/(site:|inurl:|intitle:|intext:|filetype:|ext:|related:|cache:|info:|link:|hostname:|host:|rhost:|url:|title:|mime:|parsed\.names:|cert\.|services\.|autonomous_system\.|app=|title=|port=)/g, '<span class="kw">$1</span>');
+}
+
+// ════════════════════════════════════════════════════════
+// CARD RENDERING
+// ════════════════════════════════════════════════════════
+function renderCard(dork){
+  const engColor = getEngineColor(currentEngine);
+  const engName = getEngineName(currentEngine);
+  const rawQ = dork.query;
+  const builtQ = buildQuery(dork);
+  return `
+  <div class="dork-card" data-cat="${dork.cat}" data-tags="${dork.tags.join(' ')}" data-id="${dork.id}">
+    <div class="dork-card-header">
+      <span class="dork-cat-badge cat-${dork.cat}">${dork.cat.replace(/-/g,' ')}</span>
+      <span class="dork-name" title="${dork.name}">${dork.name}</span>
+      <span class="dork-risk risk-${dork.risk}">${dork.risk}</span>
+    </div>
+    <div class="dork-body">
+      <p class="dork-desc">${dork.desc}</p>
+      <div class="dork-query-box" title="Click to copy" onclick="copyQuery(${dork.id})">${formatQuery(rawQ)}</div>
+      <div class="dork-actions">
+        <button class="btn-search btn-primary" onclick="launchDork(${dork.id})" style="border-color:${engColor}30;color:${engColor}">
+          <span>${getEngineIcon(currentEngine)}</span>${engName}
+        </button>
+        <a class="btn-search btn-g" href="${engines.google(builtQ)}" target="_blank" rel="noopener" title="Google">G</a>
+        <a class="btn-search btn-b" href="${engines.bing(builtQ)}" target="_blank" rel="noopener" title="Bing">B</a>
+        <a class="btn-search btn-y" href="${engines.yandex(builtQ)}" target="_blank" rel="noopener" title="Yandex.com">Y</a>
+        <a class="btn-search btn-yr" href="${engines.yandexru(builtQ)}" target="_blank" rel="noopener" title="Yandex.ru">Я</a>
+        <a class="btn-search btn-ddg" href="${engines.duckduckgo(builtQ)}" target="_blank" rel="noopener" title="DuckDuckGo">🦆</a>
+        <button class="btn-copy" onclick="copyQuery(${dork.id})" title="Copy query"><i class="fa-regular fa-copy"></i></button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+// FILTER & RENDER GRID
+// ════════════════════════════════════════════════════════
+function getFilteredDorks(){
+  const search = (document.getElementById('dorkSearch').value || '').toLowerCase();
+  return DORKS.filter(d => {
+    const catMatch = currentCat === 'all' || d.cat === currentCat;
+    const searchMatch = !search ||
+      d.name.toLowerCase().includes(search) ||
+      d.cat.toLowerCase().includes(search) ||
+      d.tags.some(t => t.includes(search)) ||
+      d.desc.toLowerCase().includes(search) ||
+      d.query.toLowerCase().includes(search);
+    return catMatch && searchMatch;
+  });
+}
+
+function renderGrid(){
+  const filtered = getFilteredDorks();
+  const grid = document.getElementById('dorkGrid');
+  const crit = filtered.filter(d=>d.risk==='critical').length;
+  const high = filtered.filter(d=>d.risk==='high').length;
+  const med  = filtered.filter(d=>d.risk==='medium').length;
+  const low  = filtered.filter(d=>d.risk==='low').length;
+  document.getElementById('visibleCount').textContent = filtered.length;
+  document.getElementById('visibleCountLabel').textContent = `${filtered.length} dorks`;
+  document.getElementById('cntCrit2').textContent = crit;
+  document.getElementById('cntHigh2').textContent = high;
+  document.getElementById('cntMed2').textContent = med;
+  document.getElementById('cntLow2').textContent = low;
+  if(filtered.length===0){
+    grid.innerHTML='<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><p>No dorks match your filter. Try a different search or category.</p></div>';
+    return;
+  }
+  grid.innerHTML = filtered.map(renderCard).join('');
+}
+
+// ════════════════════════════════════════════════════════
+// ACTIONS
+// ════════════════════════════════════════════════════════
+function getDork(id){ return DORKS.find(d=>d.id===id); }
+
+function launchDork(id){
+  const dork = getDork(id);
+  if(!dork) return;
+  const q = buildQuery(dork);
+  const url = engines[currentEngine] ? engines[currentEngine](q) : engines.google(q);
+  window.open(url,'_blank','noopener');
+}
+
+function copyQuery(id){
+  const dork = getDork(id);
+  if(!dork) return;
+  const q = buildQuery(dork);
+  navigator.clipboard.writeText(q).then(()=>showToast('Query copied!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=q;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('Copied!');
+  });
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  t.classList.add('show');
+  clearTimeout(window._tt);
+  window._tt=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+function launchAll(){
+  if(!currentDomain){ showToast('⚠️ Set a target domain first!'); return; }
+  const filtered = getFilteredDorks();
+  if(filtered.length>20){
+    if(!confirm(`This will open ${filtered.length} tabs. Continue?`)) return;
+  }
+  filtered.forEach((d,i)=>{
+    setTimeout(()=>{
+      const q = buildQuery(d);
+      const url = engines[currentEngine](q);
+      window.open(url,'_blank','noopener');
+    },i*250);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// DOMAIN INPUT — REAL-TIME
+// ════════════════════════════════════════════════════════
+function applyDomain(val){
+  val = val.trim().replace(/^https?:\/\//i,'').replace(/\/.*$/,'');
+  currentDomain = val;
+  const badge = document.getElementById('domainBadge');
+  const statusEl = document.getElementById('targetStatus');
+  if(val){
+    document.getElementById('domainBadgeText').textContent = val;
+    badge.classList.add('show');
+    statusEl.textContent = `✓ ${DORKS.length} queries now targeted at: ${val}`;
+    statusEl.className = 'target-status live';
+  } else {
+    badge.classList.remove('show');
+    statusEl.textContent = 'Enter a domain above — all queries update live as you type';
+    statusEl.className = 'target-status';
+  }
+  renderGrid();
+  renderCombos();
+}
+
+document.getElementById('targetDomain').addEventListener('input', function(){
+  applyDomain(this.value);
+});
+document.getElementById('targetDomain').addEventListener('keydown', function(e){
+  if(e.key==='Enter') applyDomain(this.value);
+});
+
+function applyTarget(){
+  applyDomain(document.getElementById('targetDomain').value);
+}
+
+function setTarget(domain){
+  document.getElementById('targetDomain').value = domain;
+  applyDomain(domain);
+}
+
+// ════════════════════════════════════════════════════════
+// ENGINE & CAT SELECTION
+// ════════════════════════════════════════════════════════
+function selectEngine(el){
+  document.querySelectorAll('.engine-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  currentEngine = el.dataset.engine;
+  renderGrid();
+}
+function filterCat(el){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  currentCat = el.dataset.cat;
+  renderGrid();
+}
+function filterDorks(){ renderGrid(); }
+
+// ════════════════════════════════════════════════════════
+// POWER COMBOS RENDER
+// ════════════════════════════════════════════════════════
+function renderCombos(){
+  const d = currentDomain || 'example.com';
+  document.getElementById('comboGrid').innerHTML = COMBOS.map((c,i)=>`
+    <div class="combo-card">
+      <div class="combo-title">${c.title}</div>
+      <div class="combo-note">${c.note}</div>
+      <pre>${c.code.replace(/\{domain\}/g,d).replace(/\{dot\}/g,'.')}</pre>
+      <button class="combo-copy-btn" onclick="copyCombo(${i})">⎘ Copy All</button>
+    </div>`).join('');
+}
+
+function copyCombo(idx){
+  const d = currentDomain || 'example.com';
+  const text = COMBOS[idx].code.replace(/\{domain\}/g,d).replace(/\{dot\}/g,'.');
+  navigator.clipboard.writeText(text).then(()=>showToast('Combo copied!')).catch(()=>showToast('Copy failed'));
+}
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+document.getElementById('totalDorks').textContent = DORKS.length;
+document.getElementById('cntCritical').textContent = DORKS.filter(d=>d.risk==='critical').length;
+document.getElementById('cntHigh').textContent = DORKS.filter(d=>d.risk==='high').length;
+renderGrid();
+renderCombos();
+</script>
+</body>
+</html>
