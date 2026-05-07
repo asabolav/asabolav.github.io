@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DorkMaster Pro — Advanced Search Engine Operators</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10; --bg2: #0f1117; --bg3: #151820;
+    --border: #1e2330; --border-bright: #2e3650;
+    --text: #c8d0e8; --text-dim: #6b7499; --text-bright: #eef1fa;
+    --accent: #4f8ef7; --accent2: #7c5cfc; --accent3: #00d4aa;
+    --accent4: #f7c948; --accent5: #f76f4f; --accent6: #e84393;
+    --accent7: #48c9e8; --glow: rgba(79,142,247,0.15);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(79,142,247,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(79,142,247,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+
+  /* NAV */
+  nav { position: sticky; top: 0; z-index: 100; background: rgba(10,12,16,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem; height: 52px; overflow-x: auto; }
+  nav::-webkit-scrollbar { height: 0; }
+  .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; color: var(--accent); white-space: nowrap; letter-spacing: -0.5px; margin-right: 0.5rem; flex-shrink: 0; }
+  .nav-logo span { color: var(--accent2); }
+  .nav-link { color: var(--text-dim); text-decoration: none; font-size: 10px; font-weight: 500; white-space: nowrap; padding: 4px 8px; border-radius: 4px; transition: all 0.15s; display: flex; align-items: center; gap: 5px; }
+  .nav-link:hover { color: var(--text-bright); background: var(--bg3); }
+  .nav-link .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* HERO */
+  .hero { position: relative; z-index: 1; padding: 60px 2rem 40px; text-align: center; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 600px; height: 400px; background: radial-gradient(ellipse, rgba(79,142,247,0.12) 0%, transparent 70%); pointer-events: none; }
+  .hero-label { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; border: 1px solid rgba(79,142,247,0.3); padding: 4px 14px; border-radius: 20px; margin-bottom: 20px; background: rgba(79,142,247,0.05); }
+  .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(32px, 5vw, 64px); font-weight: 800; color: var(--text-bright); line-height: 1.05; letter-spacing: -2px; margin-bottom: 16px; }
+  .hero h1 em { font-style: normal; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero p { max-width: 580px; margin: 0 auto 30px; color: var(--text-dim); font-size: 12px; line-height: 1.7; }
+  .stats-row { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; margin-bottom: 0; }
+  .stat-pill { background: var(--bg3); border: 1px solid var(--border); padding: 6px 18px; border-radius: 4px; font-size: 11px; }
+  .stat-pill strong { color: var(--text-bright); font-size: 16px; font-family: 'Syne', sans-serif; display: block; }
+
+  /* TARGET DOMAIN SECTION */
+  .target-section { position: relative; z-index: 1; max-width: 780px; margin: 0 auto 20px; padding: 0 1.5rem; }
+  .target-box { background: linear-gradient(135deg, rgba(79,142,247,0.08), rgba(124,92,252,0.06)); border: 1px solid rgba(79,142,247,0.35); border-radius: 12px; padding: 22px 24px; }
+  .target-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .target-label::after { content: 'ALL QUERIES WILL USE THIS DOMAIN'; font-size: 9px; color: var(--text-dim); letter-spacing: 1px; }
+  .target-row { display: flex; gap: 10px; align-items: center; }
+  .target-input-wrap { flex: 1; position: relative; display: flex; align-items: center; background: var(--bg); border: 1.5px solid var(--border-bright); border-radius: 8px; padding: 10px 14px; gap: 10px; transition: border-color 0.2s, box-shadow 0.2s; }
+  .target-input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,142,247,0.12); }
+  .target-prefix { color: var(--text-dim); font-size: 12px; flex-shrink: 0; }
+  #target-domain { flex: 1; background: none; border: none; outline: none; color: var(--text-bright); font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 500; }
+  #target-domain::placeholder { color: var(--text-dim); font-weight: 400; }
+  .target-clear { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 16px; padding: 0 4px; transition: color 0.15s; }
+  .target-clear:hover { color: var(--accent5); }
+  .target-status { font-size: 10px; margin-top: 10px; display: flex; align-items: center; gap: 8px; }
+  .target-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+  .target-status-dot.active { background: var(--accent3); box-shadow: 0 0 6px var(--accent3); }
+  .target-status-text { color: var(--text-dim); }
+  .target-status-text.active { color: var(--accent3); }
+
+  /* FILTER BAR */
+  .search-wrap { position: relative; z-index: 1; max-width: 700px; margin: 0 auto 20px; padding: 0 1.5rem; }
+  .search-bar { display: flex; align-items: center; background: var(--bg2); border: 1px solid var(--border-bright); border-radius: 8px; padding: 10px 14px; gap: 10px; transition: border-color 0.2s, box-shadow 0.2s; }
+  .search-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,142,247,0.1); }
+  .search-bar input { flex: 1; background: none; border: none; outline: none; color: var(--text-bright); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .search-bar input::placeholder { color: var(--text-dim); }
+  #search-count { font-size: 10px; color: var(--text-dim); white-space: nowrap; }
+
+  /* MAIN */
+  .main { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 0 1.5rem 100px; }
+
+  /* ENGINE SECTION */
+  .engine-section { margin-bottom: 60px; animation: fadeUp 0.4s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .engine-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
+  .engine-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .engine-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--text-bright); }
+  .engine-subtitle { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .engine-count { margin-left: auto; font-size: 10px; color: var(--text-dim); background: var(--bg3); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+  .engine-dual-badge { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #ffcc00; background: rgba(255,204,0,0.1); border: 1px solid rgba(255,204,0,0.25); padding: 3px 9px; border-radius: 4px; }
+
+  /* CATEGORY */
+  .category-group { margin-bottom: 22px; }
+  .category-label { font-size: 9px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; padding-left: 2px; display: flex; align-items: center; gap: 8px; }
+  .category-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* DORK GRID */
+  .dork-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 7px; }
+  .dork-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 11px 13px; display: flex; flex-direction: column; gap: 5px; position: relative; overflow: hidden; transition: all 0.15s; }
+  .dork-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 3px 0 0 3px; opacity: 0; transition: opacity 0.15s; }
+  .dork-card:hover { border-color: var(--border-bright); background: var(--bg3); transform: translateX(2px); }
+  .dork-card:hover::before { opacity: 1; }
+  .dork-card.copied { border-color: var(--accent3) !important; }
+  .dork-operator { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--text-bright); word-break: break-all; cursor: pointer; }
+  .dork-operator:hover { color: var(--accent); }
+  .dork-desc { font-size: 10px; color: var(--text-dim); line-height: 1.5; }
+  .card-footer { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .dork-tag { display: inline-block; font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 6px; border-radius: 3px; }
+  .tag-osint { background: rgba(0,212,170,0.1); color: var(--accent3); border: 1px solid rgba(0,212,170,0.2); }
+  .tag-recon { background: rgba(79,142,247,0.1); color: var(--accent); border: 1px solid rgba(79,142,247,0.2); }
+  .tag-files { background: rgba(247,201,72,0.1); color: var(--accent4); border: 1px solid rgba(247,201,72,0.2); }
+  .tag-filter { background: rgba(124,92,252,0.1); color: var(--accent2); border: 1px solid rgba(124,92,252,0.2); }
+  .tag-advanced { background: rgba(247,111,79,0.1); color: var(--accent5); border: 1px solid rgba(247,111,79,0.2); }
+  .tag-network { background: rgba(72,201,232,0.1); color: var(--accent7); border: 1px solid rgba(72,201,232,0.2); }
+  .tag-content { background: rgba(232,67,147,0.1); color: var(--accent6); border: 1px solid rgba(232,67,147,0.2); }
+
+  /* SEARCH / ACTION BUTTONS */
+  .btn-row { display: flex; gap: 4px; align-items: center; margin-left: auto; flex-shrink: 0; }
+  .copy-btn { background: none; border: 1px solid var(--border); color: var(--text-dim); cursor: pointer; padding: 3px 7px; border-radius: 3px; transition: all 0.15s; font-size: 9px; font-family: 'JetBrains Mono', monospace; }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .search-btn { background: none; border: 1px solid var(--border); color: var(--text-dim); cursor: pointer; padding: 3px 8px; border-radius: 3px; transition: all 0.15s; font-size: 9px; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+  .search-btn:hover { color: var(--text-bright); background: var(--bg3); border-color: var(--border-bright); }
+  .search-btn.com { color: #ffcc00; border-color: rgba(255,204,0,0.3); }
+  .search-btn.com:hover { background: rgba(255,204,0,0.08); border-color: #ffcc00; }
+  .search-btn.ru { color: #ff6b6b; border-color: rgba(255,107,107,0.3); }
+  .search-btn.ru:hover { background: rgba(255,107,107,0.08); border-color: #ff6b6b; }
+
+  /* ENGINE COLORS */
+  .google .engine-icon { background: rgba(79,142,247,0.1); border: 1px solid rgba(79,142,247,0.2); }
+  .google .dork-card::before { background: var(--accent); }
+  .google .dork-operator { color: var(--accent); }
+  .bing .engine-icon { background: rgba(0,188,212,0.1); border: 1px solid rgba(0,188,212,0.2); }
+  .bing .dork-card::before { background: #00bcd4; }
+  .bing .dork-operator { color: #00bcd4; }
+  .duckduckgo .engine-icon { background: rgba(222,88,51,0.1); border: 1px solid rgba(222,88,51,0.2); }
+  .duckduckgo .dork-card::before { background: #de5833; }
+  .duckduckgo .dork-operator { color: #de5833; }
+  .shodan .engine-icon { background: rgba(247,111,79,0.1); border: 1px solid rgba(247,111,79,0.2); }
+  .shodan .dork-card::before { background: var(--accent5); }
+  .shodan .dork-operator { color: var(--accent5); }
+  .github .engine-icon { background: rgba(200,200,200,0.1); border: 1px solid rgba(200,200,200,0.2); }
+  .github .dork-card::before { background: #c8c8c8; }
+  .github .dork-operator { color: #c8c8c8; }
+  .censys .engine-icon { background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.2); }
+  .censys .dork-card::before { background: var(--accent3); }
+  .censys .dork-operator { color: var(--accent3); }
+  .zoomeye .engine-icon { background: rgba(124,92,252,0.1); border: 1px solid rgba(124,92,252,0.2); }
+  .zoomeye .dork-card::before { background: var(--accent2); }
+  .zoomeye .dork-operator { color: var(--accent2); }
+  .yandex .engine-icon { background: rgba(255,204,0,0.1); border: 1px solid rgba(255,204,0,0.2); }
+  .yandex .dork-card::before { background: #ffcc00; }
+  .yandex .dork-operator { color: #ffcc00; }
+  .yahoo .engine-icon { background: rgba(170,119,255,0.1); border: 1px solid rgba(170,119,255,0.2); }
+  .yahoo .dork-card::before { background: #aa77ff; }
+  .yahoo .dork-operator { color: #aa77ff; }
+  .baidu .engine-icon { background: rgba(41,138,255,0.1); border: 1px solid rgba(41,138,255,0.2); }
+  .baidu .dork-card::before { background: #298aff; }
+  .baidu .dork-operator { color: #298aff; }
+  .archive .engine-icon { background: rgba(247,201,72,0.1); border: 1px solid rgba(247,201,72,0.2); }
+  .archive .dork-card::before { background: var(--accent4); }
+  .archive .dork-operator { color: var(--accent4); }
+  .grep .engine-icon { background: rgba(72,201,232,0.1); border: 1px solid rgba(72,201,232,0.2); }
+  .grep .dork-card::before { background: var(--accent7); }
+  .grep .dork-operator { color: var(--accent7); }
+
+  /* COMBOS */
+  .ref-section { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto 60px; padding: 0 1.5rem; }
+  .ref-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--text-bright); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .combo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 8px; }
+  .combo-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; font-size: 11px; }
+  .combo-card .combo-title { font-weight: 700; color: var(--text-bright); margin-bottom: 6px; font-size: 12px; }
+  .combo-card pre { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; font-size: 11px; color: var(--accent3); overflow-x: auto; line-height: 1.8; margin-top: 6px; white-space: pre-wrap; word-break: break-all; }
+  .combo-card .combo-note { color: var(--text-dim); margin-top: 6px; line-height: 1.5; font-size: 10px; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 30px; right: 30px; background: var(--bg3); border: 1px solid var(--accent3); color: var(--accent3); padding: 10px 18px; border-radius: 6px; font-size: 11px; font-weight: 700; z-index: 999; opacity: 0; transform: translateY(10px); transition: all 0.2s; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* FOOTER */
+  footer { position: relative; z-index: 1; text-align: center; padding: 40px 2rem; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 11px; line-height: 2; }
+
+  /* JUMP ROW */
+  .jump-row { position: relative; z-index: 1; display: flex; flex-wrap: wrap; gap: 5px; max-width: 1400px; margin: 0 auto 30px; padding: 0 1.5rem; }
+  .jump-btn { background: var(--bg2); border: 1px solid var(--border); color: var(--text-dim); text-decoration: none; font-size: 9px; font-weight: 700; padding: 5px 10px; border-radius: 4px; transition: all 0.15s; display: flex; align-items: center; gap: 5px; }
+  .jump-btn:hover { border-color: var(--border-bright); color: var(--text-bright); background: var(--bg3); }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+
+  @media (max-width: 640px) {
+    .dork-grid { grid-template-columns: 1fr; }
+    .combo-grid { grid-template-columns: 1fr; }
+    .target-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Dork<span>Master</span> <span style="font-size:9px;color:var(--accent3);margin-left:4px;">PRO</span></div>
+  <a class="nav-link" href="#google"><span class="dot" style="background:#4285f4"></span>Google</a>
+  <a class="nav-link" href="#bing"><span class="dot" style="background:#00bcd4"></span>Bing</a>
+  <a class="nav-link" href="#duckduckgo"><span class="dot" style="background:#de5833"></span>DuckDuckGo</a>
+  <a class="nav-link" href="#yandex"><span class="dot" style="background:#ffcc00"></span>Yandex</a>
+  <a class="nav-link" href="#shodan"><span class="dot" style="background:#f76f4f"></span>Shodan</a>
+  <a class="nav-link" href="#github"><span class="dot" style="background:#c8c8c8"></span>GitHub</a>
+  <a class="nav-link" href="#censys"><span class="dot" style="background:#00d4aa"></span>Censys</a>
+  <a class="nav-link" href="#zoomeye"><span class="dot" style="background:#7c5cfc"></span>ZoomEye</a>
+  <a class="nav-link" href="#yahoo"><span class="dot" style="background:#aa77ff"></span>Yahoo</a>
+  <a class="nav-link" href="#baidu"><span class="dot" style="background:#298aff"></span>Baidu</a>
+  <a class="nav-link" href="#archive"><span class="dot" style="background:#f7c948"></span>Archive</a>
+  <a class="nav-link" href="#grep"><span class="dot" style="background:#48c9e8"></span>Grep.app</a>
+  <a class="nav-link" href="#combos"><span class="dot" style="background:#e84393"></span>Combos</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">⚡ Advanced Search Operator Reference</div>
+  <h1>The Complete<br><em>Dorking Arsenal</em></h1>
+  <p>Every working search operator across all major engines. Enter your target domain below and every query will be generated specifically for it. Click any card to copy. Click 🔍 to search directly.</p>
+  <div class="stats-row">
+    <div class="stat-pill"><strong id="total-count">—</strong>operators</div>
+    <div class="stat-pill"><strong>12</strong>engines</div>
+    <div class="stat-pill"><strong>Yandex</strong>.com + .ru</div>
+    <div class="stat-pill"><strong>Domain</strong>aware</div>
+  </div>
+</section>
+
+<!-- TARGET DOMAIN INPUT -->
+<div class="target-section">
+  <div class="target-box">
+    <div class="target-label">🎯 Target Domain</div>
+    <div class="target-row">
+      <div class="target-input-wrap">
+        <span class="target-prefix">https://</span>
+        <input type="text" id="target-domain" placeholder="example.com" autocomplete="off" spellcheck="false">
+        <button class="target-clear" id="target-clear" title="Clear domain">✕</button>
+      </div>
+    </div>
+    <div class="target-status">
+      <div class="target-status-dot" id="status-dot"></div>
+      <span class="target-status-text" id="status-text">Enter a domain to generate targeted dorks for all engines</span>
+    </div>
+  </div>
+</div>
+
+<!-- FILTER SEARCH -->
+<div class="search-wrap">
+  <div class="search-bar">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search-input" placeholder="Filter dorks… e.g. filetype, port, login, api">
+    <span id="search-count"></span>
+  </div>
+</div>
+
+<!-- JUMP LINKS -->
+<div class="jump-row">
+  <a class="jump-btn" href="#google">🔍 Google</a>
+  <a class="jump-btn" href="#bing">🌐 Bing</a>
+  <a class="jump-btn" href="#duckduckgo">🦆 DuckDuckGo</a>
+  <a class="jump-btn" href="#yandex">🇷🇺 Yandex (.com + .ru)</a>
+  <a class="jump-btn" href="#shodan">📡 Shodan</a>
+  <a class="jump-btn" href="#github">🐙 GitHub</a>
+  <a class="jump-btn" href="#censys">🔭 Censys</a>
+  <a class="jump-btn" href="#zoomeye">👁 ZoomEye</a>
+  <a class="jump-btn" href="#yahoo">💜 Yahoo</a>
+  <a class="jump-btn" href="#baidu">🇨🇳 Baidu</a>
+  <a class="jump-btn" href="#archive">📦 Archive.org</a>
+  <a class="jump-btn" href="#grep">🔎 Grep.app</a>
+  <a class="jump-btn" href="#combos">⚡ Power Combos</a>
+</div>
+
+<!-- MAIN — dynamically rendered by JS -->
+<main class="main" id="dork-main"></main>
+
+<!-- POWER COMBOS -->
+<div class="ref-section" id="combos">
+  <div class="ref-title">⚡ Power Combo Dorks <span style="font-size:11px;font-weight:400;color:var(--text-dim);margin-left:4px;">— Multi-operator chains for advanced research</span></div>
+  <div class="combo-grid" id="combo-grid"></div>
+</div>
+
+<footer>
+  <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text-bright);margin-bottom:8px;">DorkMaster Pro</div>
+  Advanced Search Operator Reference — Domain-Aware Edition<br>
+  For security research, OSINT analysis, journalism, and advanced information gathering.<br>
+  <span style="color:var(--border-bright)">Always use search operators responsibly and in accordance with applicable laws and terms of service.</span><br><br>
+  <span style="color:var(--border-bright);font-size:10px">Click any operator to copy · Click 🔍 to open in search engine · Yandex supports both .com and .ru</span>
+</footer>
+
+<div class="toast" id="toast">⎘ Copied</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// DORK DATABASE
+// Format: [template, description, tag]
+// {d} = target domain placeholder
+// ══════════════════════════════════════════════════════════
+const E = encodeURIComponent;
+
+const DB = {
+  google: {
+    name:'Google', icon:'🔍', cls:'google', subtitle:'google.com — World\'s most powerful web index',
+    url: q => `https://www.google.com/search?q=${E(q)}`,
+    cats:[
+      ['Site & URL Operators',[
+        ['site:{d}','All indexed pages on target domain','recon'],
+        ['site:{d} -www','Enumerate subdomains (exclude www)','recon'],
+        ['site:*.{d}','Find all subdomains via wildcard','recon'],
+        ['site:*.{d} -www','All non-www subdomains','recon'],
+        ['inurl:{d}','Pages with domain in URL','recon'],
+        ['related:{d}','Similar/related websites','osint'],
+        ['cache:{d}','Google cached version of target','osint'],
+        ['info:{d}','Google index info for domain','osint'],
+        ['link:{d}','Pages linking to target domain','osint'],
+        ['site:{d} inurl:sitemap','Sitemap files','recon'],
+        ['site:{d} inurl:robots.txt','Robots.txt files','recon'],
+        ['site:{d} inurl:.well-known','Well-known URLs','recon'],
+      ]],
+      ['Login & Admin Pages',[
+        ['site:{d} intitle:"login"','Login pages','recon'],
+        ['site:{d} intitle:"admin"','Admin pages','recon'],
+        ['site:{d} intitle:"sign in"','Sign-in pages','recon'],
+        ['site:{d} intitle:"control panel"','Control panels','recon'],
+        ['site:{d} intitle:"dashboard"','Dashboards','recon'],
+        ['site:{d} intitle:"administrator"','Administrator panels','recon'],
+        ['site:{d} intitle:"Outlook Web App"','OWA instances','recon'],
+        ['site:{d} intitle:"Webmail"','Webmail interfaces','recon'],
+        ['site:{d} intitle:"phpMyAdmin"','phpMyAdmin panels','recon'],
+        ['site:{d} intitle:"Plesk"','Plesk hosting panels','recon'],
+        ['site:{d} intitle:"cPanel"','cPanel interfaces','recon'],
+        ['site:{d} inurl:admin/login','Admin login URLs','recon'],
+        ['site:{d} inurl:administrator','Administrator URL paths','recon'],
+        ['site:{d} inurl:wp-login.php','WordPress login','recon'],
+        ['site:{d} inurl:wp-admin','WordPress admin panel','recon'],
+        ['site:{d} inurl:phpmyadmin','phpMyAdmin URL','recon'],
+        ['site:{d} inurl:cpanel','cPanel URL','recon'],
+        ['site:{d} inurl:webmail','Webmail URL','recon'],
+        ['site:{d} inurl:user/login','User login endpoints','recon'],
+        ['site:{d} inurl:auth','Authentication endpoints','recon'],
+        ['site:{d} inurl:signin','Sign-in endpoints','recon'],
+        ['site:{d} inurl:panel','Panel pages','recon'],
+        ['site:{d} inurl:manager','Manager pages','recon'],
+        ['site:{d} inurl:portal','Portal pages','recon'],
+        ['site:{d} inurl:sso','Single Sign-On pages','recon'],
+        ['site:{d} inurl:oauth','OAuth endpoints','recon'],
+        ['site:{d} inurl:login inurl:redirect','Login with redirect','recon'],
+        ['site:{d} allinurl:admin login php','Admin login PHP pages','recon'],
+      ]],
+      ['File & Document Exposure',[
+        ['site:{d} filetype:pdf','PDF documents','files'],
+        ['site:{d} filetype:doc','Word documents (.doc)','files'],
+        ['site:{d} filetype:docx','Word documents (.docx)','files'],
+        ['site:{d} filetype:xls','Excel spreadsheets (.xls)','files'],
+        ['site:{d} filetype:xlsx','Excel spreadsheets (.xlsx)','files'],
+        ['site:{d} filetype:ppt','PowerPoint (.ppt)','files'],
+        ['site:{d} filetype:pptx','PowerPoint (.pptx)','files'],
+        ['site:{d} filetype:txt','Plain text files','files'],
+        ['site:{d} filetype:csv','CSV data files','files'],
+        ['site:{d} filetype:xml','XML files','files'],
+        ['site:{d} filetype:json','JSON data files','files'],
+        ['site:{d} filetype:sql','SQL database dumps','files'],
+        ['site:{d} filetype:log','Log files','files'],
+        ['site:{d} filetype:bak','Backup files (.bak)','files'],
+        ['site:{d} filetype:old','Old/archived files','files'],
+        ['site:{d} filetype:zip','ZIP archives','files'],
+        ['site:{d} filetype:tar','TAR archives','files'],
+        ['site:{d} filetype:gz','GZIP archives','files'],
+        ['site:{d} filetype:rar','RAR archives','files'],
+        ['site:{d} filetype:7z','7-Zip archives','files'],
+        ['site:{d} filetype:php','PHP source files','files'],
+        ['site:{d} filetype:asp','ASP pages','files'],
+        ['site:{d} filetype:aspx','ASPX pages','files'],
+        ['site:{d} filetype:jsp','JSP pages','files'],
+        ['site:{d} filetype:cfg','Config files (.cfg)','files'],
+        ['site:{d} filetype:ini','INI config files','files'],
+        ['site:{d} filetype:conf','Conf files','files'],
+        ['site:{d} filetype:yaml OR filetype:yml','YAML files','files'],
+        ['site:{d} filetype:toml','TOML config files','files'],
+        ['site:{d} filetype:env','Environment files (.env)','files'],
+        ['site:{d} filetype:swf','Flash SWF files (legacy)','files'],
+        ['site:{d} filetype:mdb','Access databases (.mdb)','files'],
+        ['site:{d} filetype:sqlite','SQLite databases','files'],
+        ['site:{d} filetype:pem','PEM certificate files','files'],
+        ['site:{d} filetype:key','Key files','files'],
+        ['site:{d} filetype:crt','Certificate files (.crt)','files'],
+        ['site:{d} filetype:p12','PKCS12 certificate files','files'],
+        ['site:{d} filetype:htpasswd','Apache htpasswd files','files'],
+        ['site:{d} filetype:htaccess','Apache .htaccess files','files'],
+      ]],
+      ['Config & Credential Files',[
+        ['site:{d} filetype:env intext:DB_PASSWORD','DB creds in .env','files'],
+        ['site:{d} intext:"DB_PASSWORD"','Database password strings','content'],
+        ['site:{d} intext:"DB_HOST"','Database host config','content'],
+        ['site:{d} intext:"API_KEY"','API key references','content'],
+        ['site:{d} intext:"SECRET_KEY"','Secret key references','content'],
+        ['site:{d} intext:"ACCESS_TOKEN"','Access tokens','content'],
+        ['site:{d} intext:"aws_access_key_id"','AWS access key ID','content'],
+        ['site:{d} intext:"aws_secret_access_key"','AWS secret keys','content'],
+        ['site:{d} intext:"BEGIN RSA PRIVATE KEY"','RSA private keys','files'],
+        ['site:{d} intext:"BEGIN CERTIFICATE"','TLS certificates','files'],
+        ['site:{d} intext:"connectionString"','DB connection strings','content'],
+        ['site:{d} intext:"mysql_connect"','MySQL connection calls','content'],
+        ['site:{d} intext:"SMTP_PASSWORD"','SMTP credentials','content'],
+        ['site:{d} intext:"private_key"','Private key strings','content'],
+        ['site:{d} filetype:ini intext:password','Passwords in INI files','files'],
+        ['site:{d} filetype:xml intext:password','Passwords in XML','files'],
+        ['site:{d} filetype:yml intext:password','Passwords in YAML','files'],
+        ['site:{d} filetype:conf intext:password','Passwords in conf','files'],
+        ['site:{d} ext:config intext:appSettings','App config files','files'],
+        ['site:{d} intext:"mongoURI"','MongoDB connection URIs','content'],
+        ['site:{d} intext:"redis://"','Redis connection URLs','content'],
+        ['site:{d} intext:"postgres://"','PostgreSQL connection URLs','content'],
+      ]],
+      ['Directory Listings',[
+        ['site:{d} intitle:"index of"','Open directory listings','recon'],
+        ['site:{d} intitle:"index of" "parent directory"','Parent dir listings','recon'],
+        ['site:{d} intitle:"index of" /backup','Backup directories','recon'],
+        ['site:{d} intitle:"index of" /admin','Admin directories','recon'],
+        ['site:{d} intitle:"index of" /uploads','Upload directories','recon'],
+        ['site:{d} intitle:"index of" /files','File directories','recon'],
+        ['site:{d} intitle:"index of" /logs','Log directories','recon'],
+        ['site:{d} intitle:"index of" /config','Config directories','recon'],
+        ['site:{d} intitle:"index of" /db','Database directories','recon'],
+        ['site:{d} intitle:"index of" /private','Private directories','recon'],
+        ['site:{d} intitle:"index of" /src','Source directories','recon'],
+        ['site:{d} intitle:"index of" /data','Data directories','recon'],
+        ['site:{d} intitle:"index of" "last modified"','Modified file listings','recon'],
+        ['site:{d} intitle:"Directory Listing"','Tomcat/Jetty dir listings','recon'],
+      ]],
+      ['Database & Backup Files',[
+        ['site:{d} filetype:sql intext:"INSERT INTO"','SQL dumps with data','files'],
+        ['site:{d} filetype:sql intext:"CREATE TABLE"','SQL schema dumps','files'],
+        ['site:{d} filetype:mdb','Access database files','files'],
+        ['site:{d} filetype:sqlite','SQLite databases','files'],
+        ['site:{d} filetype:dbf','DBF database files','files'],
+        ['site:{d} filetype:dump','Database dump files','files'],
+        ['site:{d} inurl:backup','Backup URL paths','files'],
+        ['site:{d} inurl:db filetype:sql','DB SQL files','files'],
+        ['site:{d} intext:"mysqldump"','MySQL dump marker','files'],
+        ['site:{d} intext:"sql syntax near"','SQL error pages','recon'],
+        ['site:{d} intext:"Microsoft OLE DB Provider"','OLEDB errors','recon'],
+        ['site:{d} filetype:bak inurl:sql','SQL backup files','files'],
+      ]],
+      ['API & Endpoints',[
+        ['site:{d} inurl:/api/','API endpoints','recon'],
+        ['site:{d} inurl:/api/v1','API v1 endpoints','recon'],
+        ['site:{d} inurl:/api/v2','API v2 endpoints','recon'],
+        ['site:{d} inurl:/api/v3','API v3 endpoints','recon'],
+        ['site:{d} inurl:swagger','Swagger API docs','recon'],
+        ['site:{d} inurl:swagger-ui','Swagger UI','recon'],
+        ['site:{d} inurl:graphql','GraphQL endpoints','recon'],
+        ['site:{d} inurl:graphiql','GraphiQL interface','recon'],
+        ['site:{d} inurl:rest','REST endpoints','recon'],
+        ['site:{d} inurl:webhook','Webhook URLs','recon'],
+        ['site:{d} inurl:endpoint','API endpoint URLs','recon'],
+        ['site:{d} inurl:ws://','WebSocket endpoints','network'],
+        ['site:{d} filetype:json inurl:api','JSON API responses','files'],
+        ['site:{d} intext:"api_key" filetype:js','API keys in JS','files'],
+        ['site:{d} inurl:oauth/token','OAuth token endpoints','recon'],
+      ]],
+      ['Subdomain Discovery',[
+        ['site:*.{d}','All subdomains wildcard','recon'],
+        ['site:*.{d} -www','Non-www subdomains','recon'],
+        ['site:dev.{d}','Dev subdomain','recon'],
+        ['site:staging.{d}','Staging subdomain','recon'],
+        ['site:test.{d}','Test subdomain','recon'],
+        ['site:api.{d}','API subdomain','recon'],
+        ['site:admin.{d}','Admin subdomain','recon'],
+        ['site:mail.{d}','Mail subdomain','recon'],
+        ['site:vpn.{d}','VPN subdomain','recon'],
+        ['site:git.{d}','Git subdomain','recon'],
+        ['site:beta.{d}','Beta subdomain','recon'],
+        ['site:old.{d}','Old subdomain','recon'],
+        ['site:shop.{d}','Shop subdomain','recon'],
+        ['site:app.{d}','App subdomain','recon'],
+        ['site:portal.{d}','Portal subdomain','recon'],
+        ['site:cdn.{d}','CDN subdomain','recon'],
+      ]],
+      ['Email & Contact Discovery',[
+        ['"@{d}"','Email addresses for domain','osint'],
+        ['site:{d} intext:"@{d}"','Emails published on site','osint'],
+        ['site:{d} filetype:pdf intext:"@{d}"','Emails in PDF files','osint'],
+        ['"@{d}" filetype:xls','Emails in Excel files','osint'],
+        ['"@{d}" site:pastebin.com','Emails on Pastebin','osint'],
+        ['"@{d}" site:linkedin.com','Employees on LinkedIn','osint'],
+        ['"@{d}" filetype:csv','Emails in CSV files','osint'],
+        ['site:{d} intitle:"staff" OR intitle:"team"','Staff/team pages','osint'],
+        ['site:{d} intitle:"contact"','Contact pages','osint'],
+        ['site:{d} intitle:"about" intext:"email"','About pages with email','osint'],
+      ]],
+      ['Cloud Storage',[
+        ['site:s3.amazonaws.com "{d}"','AWS S3 buckets','recon'],
+        ['site:blob.core.windows.net "{d}"','Azure Blob storage','recon'],
+        ['site:storage.googleapis.com "{d}"','Google Cloud Storage','recon'],
+        ['site:drive.google.com "{d}"','Google Drive files','osint'],
+        ['site:docs.google.com "{d}"','Google Docs for domain','osint'],
+        ['site:dropbox.com "{d}"','Dropbox shared files','osint'],
+        ['site:pastebin.com "{d}"','Pastebin entries','osint'],
+        ['site:github.com "{d}"','GitHub mentions','recon'],
+        ['site:gitlab.com "{d}"','GitLab mentions','recon'],
+        ['site:bitbucket.org "{d}"','Bitbucket mentions','recon'],
+      ]],
+      ['Error Pages & Debug Info',[
+        ['site:{d} intext:"Warning: mysql"','MySQL error messages','recon'],
+        ['site:{d} intext:"Fatal error:"','PHP fatal errors','recon'],
+        ['site:{d} intext:"Stack trace:"','Stack traces exposed','recon'],
+        ['site:{d} intext:"ORA-"','Oracle DB errors','recon'],
+        ['site:{d} intext:"ODBC Driver"','ODBC errors','recon'],
+        ['site:{d} intext:"DEBUG = True"','Django debug mode on','recon'],
+        ['site:{d} intext:"Traceback (most recent"','Python tracebacks','recon'],
+        ['site:{d} intext:"undefined index"','PHP undefined index','recon'],
+        ['site:{d} intext:"Exception in thread"','Java exceptions','recon'],
+        ['site:{d} intitle:"500 Internal Server Error"','500 error pages','recon'],
+        ['site:{d} intitle:"403 Forbidden"','Forbidden pages','recon'],
+        ['site:{d} intitle:"PHP Parse error"','PHP parse errors','recon'],
+        ['site:{d} intext:"not defined"','Undefined variable errors','recon'],
+      ]],
+      ['Network & IoT',[
+        ['site:{d} intitle:"Webcam" OR intitle:"Camera"','Web cameras','recon'],
+        ['site:{d} intitle:"Network Camera"','IP camera pages','recon'],
+        ['site:{d} intitle:"Router" inurl:setup','Router setup pages','network'],
+        ['site:{d} intitle:"Network Management"','Network management UIs','network'],
+        ['site:{d} inurl:8080','Pages on port 8080','network'],
+        ['site:{d} inurl:8443','Pages on port 8443','network'],
+        ['site:{d} inurl:8888','Pages on port 8888','network'],
+        ['site:{d} inurl:3389','RDP web interfaces','network'],
+        ['site:{d} intitle:"Cisco"','Cisco device pages','network'],
+        ['site:{d} intitle:"pfSense"','pfSense firewalls','network'],
+        ['site:{d} intitle:"OpenWrt"','OpenWrt routers','network'],
+        ['site:{d} intitle:"NETGEAR"','NETGEAR devices','network'],
+      ]],
+      ['CMS & Technology Detection',[
+        ['site:{d} inurl:wp-content','WordPress sites','recon'],
+        ['site:{d} inurl:wp-includes','WordPress core files','recon'],
+        ['site:{d} inurl:wp-json','WordPress REST API','recon'],
+        ['site:{d} inurl:Joomla','Joomla CMS','recon'],
+        ['site:{d} inurl:drupal','Drupal CMS','recon'],
+        ['site:{d} inurl:typo3','TYPO3 CMS','recon'],
+        ['site:{d} inurl:Magento','Magento e-commerce','recon'],
+        ['site:{d} inurl:opencart','OpenCart stores','recon'],
+        ['site:{d} inurl:PrestaShop','PrestaShop stores','recon'],
+        ['site:{d} intitle:"Powered by WordPress"','WordPress confirmation','recon'],
+        ['site:{d} intext:"Powered by Drupal"','Drupal confirmation','recon'],
+        ['site:{d} intitle:"Laravel"','Laravel apps','recon'],
+        ['site:{d} intext:"Powered by Django"','Django apps','recon'],
+        ['site:{d} intitle:"Grafana"','Grafana dashboards','recon'],
+        ['site:{d} intitle:"Jenkins"','Jenkins CI/CD','recon'],
+        ['site:{d} intitle:"GitLab"','GitLab instances','recon'],
+      ]],
+      ['OSINT & Social Media',[
+        ['site:linkedin.com "{d}"','LinkedIn company/employees','osint'],
+        ['site:twitter.com "{d}"','Twitter mentions','osint'],
+        ['site:facebook.com "{d}"','Facebook pages','osint'],
+        ['site:instagram.com "{d}"','Instagram mentions','osint'],
+        ['site:reddit.com "{d}"','Reddit discussions','osint'],
+        ['"site:{d}" -site:{d}','External mentions of domain','osint'],
+        ['"{d}" intext:"password" site:pastebin.com','Pastebin creds','osint'],
+        ['"{d}" intext:"breach" OR intext:"leak"','Data breach mentions','osint'],
+        ['"{d}" intext:"hacked"','Hack mentions','osint'],
+        ['"{d}" intext:"CVE-"','CVE mentions','osint'],
+        ['site:{d} after:2024-01-01','Recently indexed pages','filter'],
+        ['site:{d} before:2020-01-01','Older indexed pages','filter'],
+      ]],
+      ['Boolean & Logic',[
+        ['intitle:"keyword" site:{d}','Keyword in title','recon'],
+        ['allintext:"keyword1" "keyword2" site:{d}','Multiple keywords in body','content'],
+        ['inanchor:"keyword" site:{d}','Keyword in anchor links','content'],
+        ['"keyword" AROUND(3) "term" site:{d}','Proximity search','advanced'],
+        ['site:{d} -filetype:html -filetype:htm','Non-HTML files only','filter'],
+        ['site:{d} OR site:*.{d}','Domain + all subdomains','recon'],
+        ['(admin OR login OR panel) site:{d}','Login/admin alternatives','recon'],
+        ['site:{d} "keyword1" | "keyword2"','OR pipe operator','filter'],
+      ]],
+    ]
+  },
+
+  bing: {
+    name:'Bing', icon:'🌐', cls:'bing', subtitle:'bing.com — Microsoft\'s search engine with unique operators',
+    url: q => `https://www.bing.com/search?q=${E(q)}`,
+    cats:[
+      ['Core Bing Operators',[
+        ['site:{d}','All indexed pages','recon'],
+        ['site:{d} filetype:pdf','PDF files','files'],
+        ['site:{d} filetype:doc OR filetype:docx','Word docs','files'],
+        ['site:{d} filetype:xls OR filetype:xlsx','Excel files','files'],
+        ['site:{d} filetype:sql','SQL dumps','files'],
+        ['site:{d} filetype:env','Environment files','files'],
+        ['site:{d} filetype:log','Log files','files'],
+        ['site:{d} filetype:bak','Backup files','files'],
+        ['site:{d} filetype:xml','XML files','files'],
+        ['site:{d} filetype:json','JSON files','files'],
+        ['site:{d} filetype:yml OR filetype:yaml','YAML configs','files'],
+        ['site:{d} filetype:cfg','Config files','files'],
+        ['site:{d} filetype:ini','INI files','files'],
+        ['site:{d} filetype:conf','Conf files','files'],
+        ['ip:1.2.3.4','Pages on specific IP address','network'],
+      ]],
+      ['Bing-Specific Operators',[
+        ['site:{d} inbody:"password"','Password in page body','content'],
+        ['site:{d} inbody:"API key"','API keys in body','content'],
+        ['site:{d} inbody:"secret"','Secret strings','content'],
+        ['site:{d} inbody:"token"','Tokens in body','content'],
+        ['site:{d} inbody:"connectionstring"','Connection strings','content'],
+        ['site:{d} inbody:"DB_PASSWORD"','DB passwords','content'],
+        ['site:{d} inbody:"private key"','Private keys','content'],
+        ['site:{d} inbody:"config"','Config references','content'],
+        ['feed:{d}','RSS/Atom feeds for domain','recon'],
+        ['hasfeed:{d}','Pages with feeds','recon'],
+        ['contains:pdf site:{d}','Pages containing PDF links','files'],
+        ['loc:US "{d}"','US-based pages for domain','filter'],
+        ['language:en site:{d}','English pages','filter'],
+        ['site:{d} NOT filetype:html','Non-HTML files','files'],
+      ]],
+      ['Bing Recon & OSINT',[
+        ['site:{d} intitle:"login"','Login pages','recon'],
+        ['site:{d} intitle:"admin"','Admin pages','recon'],
+        ['site:{d} intitle:"dashboard"','Dashboard pages','recon'],
+        ['site:{d} intitle:"index of"','Directory listings','recon'],
+        ['site:{d} intitle:"phpMyAdmin"','phpMyAdmin','recon'],
+        ['site:{d} inurl:admin','Admin URLs','recon'],
+        ['site:{d} inurl:login','Login URLs','recon'],
+        ['site:{d} inurl:api','API endpoints','recon'],
+        ['site:{d} inurl:backup','Backup URLs','recon'],
+        ['site:*.{d}','All subdomains','recon'],
+        ['"@{d}" filetype:pdf','Emails in PDFs','osint'],
+        ['"{d}" site:pastebin.com','Pastebin entries','osint'],
+        ['"{d}" site:github.com','GitHub mentions','recon'],
+        ['"{d}" site:linkedin.com','LinkedIn mentions','osint'],
+        ['site:{d} after:2024-01-01','Recent pages','filter'],
+        ['site:{d} before:2020-01-01','Older pages','filter'],
+        ['site:{d} inurl:phpmyadmin','phpMyAdmin URL','recon'],
+        ['site:{d} inurl:cpanel','cPanel URL','recon'],
+        ['site:{d} inurl:webmail','Webmail URL','recon'],
+        ['site:{d} inurl:wp-admin','WordPress admin','recon'],
+      ]],
+    ]
+  },
+
+  duckduckgo: {
+    name:'DuckDuckGo', icon:'🦆', cls:'duckduckgo', subtitle:'duckduckgo.com — Privacy-first search with powerful !bang operators',
+    url: q => `https://duckduckgo.com/?q=${E(q)}`,
+    cats:[
+      ['Core Operators',[
+        ['site:{d}','All pages for domain','recon'],
+        ['site:{d} filetype:pdf','PDF files','files'],
+        ['site:{d} filetype:sql','SQL files','files'],
+        ['site:{d} filetype:env','Env files','files'],
+        ['site:{d} filetype:log','Log files','files'],
+        ['site:{d} filetype:bak','Backup files','files'],
+        ['site:{d} filetype:xls OR filetype:xlsx','Excel files','files'],
+        ['site:{d} filetype:json','JSON files','files'],
+        ['site:{d} filetype:xml','XML files','files'],
+        ['site:{d} filetype:yml','YAML files','files'],
+        ['site:{d} intitle:login','Login pages','recon'],
+        ['site:{d} intitle:admin','Admin pages','recon'],
+        ['site:{d} intitle:"index of"','Directory listings','recon'],
+        ['site:{d} inurl:admin','Admin URLs','recon'],
+        ['site:{d} inurl:wp-admin','WordPress admin','recon'],
+      ]],
+      ['OSINT & Leak Detection',[
+        ['"@{d}"','Email addresses for domain','osint'],
+        ['"{d}" "password"','Password mentions','content'],
+        ['"{d}" site:pastebin.com','Pastebin entries','osint'],
+        ['"{d}" site:github.com','GitHub mentions','recon'],
+        ['"{d}" site:gitlab.com','GitLab mentions','recon'],
+        ['"{d}" intext:"breach"','Breach mentions','osint'],
+        ['"{d}" intext:"leaked"','Leak mentions','osint'],
+        ['"{d}" intext:"hacked"','Hack references','osint'],
+        ['"{d}" intext:"CVE-"','CVE associations','osint'],
+        ['"{d}" intext:"vulnerability"','Vulnerability mentions','osint'],
+        ['site:{d} "DB_PASSWORD"','DB password strings','content'],
+        ['site:{d} "API_KEY"','API key mentions','content'],
+        ['"@{d}" filetype:xls','Emails in spreadsheets','osint'],
+        ['"{d}" site:linkedin.com "employee"','LinkedIn employees','osint'],
+        ['"{d}" "phone number" OR "contact"','Contact info','osint'],
+      ]],
+      ['Bang Operators (!)',[
+        ['!g site:{d}','→ Search Google','filter'],
+        ['!bing site:{d}','→ Search Bing','filter'],
+        ['!gh "{d}"','→ Search GitHub','recon'],
+        ['!so "{d}"','→ Stack Overflow','osint'],
+        ['!reddit "{d}"','→ Reddit search','osint'],
+        ['!shodan hostname:{d}','→ Shodan hostname','network'],
+        ['!archive {d}','→ Wayback Machine','osint'],
+        ['!pastebin "{d}"','→ Pastebin search','osint'],
+        ['!twitter "{d}"','→ Twitter search','osint'],
+        ['!linkedin "{d}"','→ LinkedIn search','osint'],
+        ['!news "{d}"','→ News search','osint'],
+        ['!maps {d}','→ Maps search','osint'],
+        ['!github "{d}"','→ GitHub search','recon'],
+        ['!censys hostname:{d}','→ Censys search','network'],
+        ['!virustotal {d}','→ VirusTotal check','osint'],
+      ]],
+    ]
+  },
+
+  yandex: {
+    name:'Yandex', icon:'🇷🇺', cls:'yandex',
+    subtitle:'yandex.com & yandex.ru — Russian search engine with unique CIS-focused operators',
+    dual: true,
+    urlCom: q => `https://yandex.com/search/?text=${E(q)}`,
+    urlRu:  q => `https://yandex.ru/search/?text=${E(q)}`,
+    cats:[
+      ['Core Yandex Operators',[
+        ['site:{d}','All indexed pages on target domain','recon'],
+        ['host:{d}','Yandex host operator (strict domain match)','recon'],
+        ['url:{d}','URL pattern matching','recon'],
+        ['title:"{d}"','Domain in page title','recon'],
+        ['rhost:{d}','Pages linking to target (backlinks)','osint'],
+        ['site:{d} mime:pdf','PDF files (Yandex MIME filter)','files'],
+        ['site:{d} mime:doc','Word documents','files'],
+        ['site:{d} mime:xls','Excel spreadsheets','files'],
+        ['site:{d} mime:ppt','PowerPoint files','files'],
+        ['site:{d} mime:txt','Text files','files'],
+        ['site:{d} mime:xml','XML files','files'],
+        ['site:{d} mime:json','JSON files','files'],
+        ['site:{d} mime:sql','SQL dump files','files'],
+        ['site:{d} mime:log','Log files','files'],
+        ['site:{d} mime:bak','Backup files','files'],
+        ['site:{d} mime:zip','ZIP archives','files'],
+        ['site:{d} mime:csv','CSV data files','files'],
+        ['site:{d} mime:env','Env files','files'],
+        ['lang:en site:{d}','English language filter','filter'],
+        ['lang:ru site:{d}','Russian language filter','filter'],
+      ]],
+      ['Login & Admin Pages',[
+        ['site:{d} title:"login"','Login pages on target','recon'],
+        ['site:{d} title:"admin"','Admin pages','recon'],
+        ['site:{d} title:"sign in"','Sign-in pages','recon'],
+        ['site:{d} title:"control panel"','Control panels','recon'],
+        ['site:{d} title:"dashboard"','Dashboards','recon'],
+        ['site:{d} title:"phpMyAdmin"','phpMyAdmin','recon'],
+        ['site:{d} title:"cPanel"','cPanel interfaces','recon'],
+        ['site:{d} title:"Webmail"','Webmail','recon'],
+        ['site:{d} title:"Outlook Web"','OWA instances','recon'],
+        ['site:{d} title:"Plesk"','Plesk panels','recon'],
+        ['site:{d} url:admin','Admin in URL','recon'],
+        ['site:{d} url:login','Login in URL','recon'],
+        ['site:{d} url:wp-admin','WordPress admin','recon'],
+        ['site:{d} url:phpmyadmin','phpMyAdmin URL','recon'],
+        ['site:{d} url:cpanel','cPanel URL','recon'],
+        ['site:{d} url:webmail','Webmail URL','recon'],
+        ['site:{d} url:dashboard','Dashboard URL','recon'],
+        ['site:{d} url:portal','Portal URL','recon'],
+        ['site:{d} url:manager','Manager URL','recon'],
+        ['site:{d} url:panel','Panel URL','recon'],
+      ]],
+      ['Config & Credentials',[
+        ['site:{d} intext:"DB_PASSWORD"','DB password strings','content'],
+        ['site:{d} intext:"API_KEY"','API key references','content'],
+        ['site:{d} intext:"SECRET_KEY"','Secret key references','content'],
+        ['site:{d} intext:"connectionString"','Connection strings','content'],
+        ['site:{d} intext:"BEGIN RSA PRIVATE KEY"','RSA private keys','files'],
+        ['site:{d} intext:"aws_secret_access_key"','AWS secrets','content'],
+        ['site:{d} intext:"SMTP_PASSWORD"','SMTP passwords','content'],
+        ['site:{d} intext:"private_key"','Private key strings','content'],
+        ['site:{d} intext:"access_token"','Access tokens','content'],
+        ['site:{d} intext:"client_secret"','OAuth client secrets','content'],
+        ['site:{d} mime:env','Environment config files','files'],
+        ['site:{d} mime:cfg','Config files','files'],
+        ['site:{d} mime:ini','INI config files','files'],
+        ['site:{d} mime:conf','Conf files','files'],
+        ['site:{d} mime:key','Key files','files'],
+        ['site:{d} mime:pem','PEM cert files','files'],
+      ]],
+      ['Subdomain Discovery',[
+        ['site:*.{d}','Wildcard subdomain search','recon'],
+        ['site:*.{d} -www','Non-www subdomains','recon'],
+        ['host:{d}','Host-level search','recon'],
+        ['site:dev.{d}','Dev subdomain','recon'],
+        ['site:staging.{d}','Staging subdomain','recon'],
+        ['site:test.{d}','Test subdomain','recon'],
+        ['site:api.{d}','API subdomain','recon'],
+        ['site:admin.{d}','Admin subdomain','recon'],
+        ['site:mail.{d}','Mail subdomain','recon'],
+        ['site:vpn.{d}','VPN subdomain','recon'],
+        ['site:git.{d}','Git subdomain','recon'],
+        ['site:beta.{d}','Beta subdomain','recon'],
+        ['site:app.{d}','App subdomain','recon'],
+        ['site:cdn.{d}','CDN subdomain','recon'],
+        ['site:portal.{d}','Portal subdomain','recon'],
+        ['site:old.{d}','Old/legacy subdomain','recon'],
+      ]],
+      ['Unique Yandex Operators',[
+        ['#admin #login site:{d}','Exact word forms (no stemming)','advanced'],
+        ['rhost:{d}','Backlink/referrer discovery','osint'],
+        ['site:{d} date:20240101','Date-specific filter (YYYYMMDD)','filter'],
+        ['site:{d} date:20230101,20241231','Date range filter','filter'],
+        ['url:admin url:login site:{d}','URL keyword combination','recon'],
+        ['title:"index" title:"of" site:{d}','Directory indexes','recon'],
+        ['site:{d} intext:"copyright {d}"','Copyright mentions','osint'],
+        ['site:{d} url:".env"','Env files via URL','files'],
+        ['site:{d} url:backup','Backup URLs','files'],
+        ['site:{d} url:api','API URL paths','recon'],
+      ]],
+      ['OSINT & Intelligence',[
+        ['"@{d}"','Email addresses for domain','osint'],
+        ['"{d}" intext:"leaked"','Leak mentions','osint'],
+        ['"{d}" site:pastebin.com','Pastebin entries','osint'],
+        ['"{d}" intext:"password"','Password references','osint'],
+        ['"{d}" intext:"employee"','Employee mentions','osint'],
+        ['"{d}" intext:"breach"','Breach references','osint'],
+        ['site:linkedin.com "{d}"','LinkedIn employees','osint'],
+        ['site:vk.com "{d}"','VK.com mentions','osint'],
+        ['site:habr.com "{d}"','Habr tech mentions','osint'],
+        ['"{d}" intext:"CVE-"','CVE associations','osint'],
+        ['"{d}" intext:"vulnerability"','Vulnerability reports','osint'],
+        ['"{d}" intext:"hacked"','Hack references','osint'],
+      ]],
+    ]
+  },
+
+  shodan: {
+    name:'Shodan', icon:'📡', cls:'shodan', subtitle:'shodan.io — IoT and network device search engine',
+    url: q => `https://www.shodan.io/search?query=${E(q)}`,
+    cats:[
+      ['Hostname & Domain',[
+        ['hostname:{d}','All hosts for target domain','network'],
+        ['hostname:.{d}','Subdomain hostname sweep','network'],
+        ['ssl.cert.subject.cn:"{d}"','Exact SSL cert CN match','network'],
+        ['ssl.cert.subject.cn:"*.{d}"','Wildcard SSL cert','network'],
+        ['ssl:"{d}"','SSL field mentions of domain','network'],
+        ['org:"{d}"','Organization name search','network'],
+        ['http.html:"{d}"','Domain in HTTP response body','content'],
+        ['http.title:"{d}"','Domain in page title','recon'],
+        ['port:80 hostname:{d}','HTTP on domain','network'],
+        ['port:443 hostname:{d}','HTTPS on domain','network'],
+        ['port:22 hostname:{d}','SSH on domain','network'],
+        ['port:21 hostname:{d}','FTP on domain','network'],
+        ['port:25 hostname:{d}','SMTP on domain','network'],
+        ['port:3306 hostname:{d}','MySQL on domain','network'],
+        ['port:5432 hostname:{d}','PostgreSQL on domain','network'],
+      ]],
+      ['Database Ports',[
+        ['port:27017 hostname:{d}','MongoDB on domain','network'],
+        ['port:6379 hostname:{d}','Redis on domain','network'],
+        ['port:9200 hostname:{d}','Elasticsearch on domain','network'],
+        ['port:9042 hostname:{d}','Cassandra on domain','network'],
+        ['port:5984 hostname:{d}','CouchDB on domain','network'],
+        ['port:28015 hostname:{d}','RethinkDB on domain','network'],
+        ['port:2181 hostname:{d}','Zookeeper on domain','network'],
+        ['port:8086 hostname:{d}','InfluxDB on domain','network'],
+        ['port:7474 hostname:{d}','Neo4j on domain','network'],
+        ['port:1521 hostname:{d}','Oracle DB on domain','network'],
+        ['port:1433 hostname:{d}','MSSQL on domain','network'],
+        ['port:3389 hostname:{d}','RDP on domain','network'],
+        ['port:5900 hostname:{d}','VNC on domain','network'],
+        ['port:8080 hostname:{d}','Alt HTTP (8080) on domain','network'],
+        ['port:8443 hostname:{d}','Alt HTTPS (8443) on domain','network'],
+      ]],
+      ['Web & App Detection',[
+        ['http.title:"admin" hostname:{d}','Admin title pages','recon'],
+        ['http.title:"dashboard" hostname:{d}','Dashboard pages','recon'],
+        ['http.title:"login" hostname:{d}','Login pages','recon'],
+        ['http.title:"phpMyAdmin" hostname:{d}','phpMyAdmin','recon'],
+        ['http.title:"Jenkins" hostname:{d}','Jenkins CI','recon'],
+        ['http.title:"Grafana" hostname:{d}','Grafana dashboards','recon'],
+        ['http.title:"Kibana" hostname:{d}','Kibana dashboards','recon'],
+        ['http.title:"Jupyter" hostname:{d}','Jupyter notebooks','recon'],
+        ['http.title:"GitLab" hostname:{d}','GitLab instances','recon'],
+        ['http.title:"Confluence" hostname:{d}','Confluence wikis','recon'],
+        ['http.title:"Jira" hostname:{d}','Jira instances','recon'],
+        ['http.title:"Elasticsearch" hostname:{d}','Elasticsearch','recon'],
+        ['http.component:"WordPress" hostname:{d}','WordPress sites','recon'],
+        ['http.component:"Drupal" hostname:{d}','Drupal sites','recon'],
+        ['http.server:"Apache" hostname:{d}','Apache servers','recon'],
+        ['http.server:"nginx" hostname:{d}','Nginx servers','recon'],
+        ['http.status:200 hostname:{d}','Live HTTP 200 responses','network'],
+        ['http.status:401 hostname:{d}','Auth-required pages','network'],
+        ['http.status:403 hostname:{d}','Forbidden pages','network'],
+      ]],
+      ['SSL & Certificates',[
+        ['ssl.cert.issuer.cn:"Let\'s Encrypt" hostname:{d}','Let\'s Encrypt certs','network'],
+        ['ssl.cert.issuer.cn:"DigiCert" hostname:{d}','DigiCert certs','network'],
+        ['ssl.cert.expired:true hostname:{d}','Expired SSL certs','network'],
+        ['ssl.cert.subject.cn:"*.{d}"','Wildcard cert hosts','network'],
+        ['ssl.alpn:http/2 hostname:{d}','HTTP/2 enabled','network'],
+        ['ssl.version:SSLv2 hostname:{d}','Deprecated SSLv2','network'],
+        ['ssl.version:SSLv3 hostname:{d}','Deprecated SSLv3','network'],
+        ['ssl.cert.pubkey.bits:1024 hostname:{d}','Weak 1024-bit keys','network'],
+        ['ssl.cert.subject.cn:"{d}" port:443','HTTPS cert match','network'],
+      ]],
+      ['OS & Software',[
+        ['product:"Apache httpd" hostname:{d}','Apache HTTP server','recon'],
+        ['product:nginx hostname:{d}','Nginx web server','recon'],
+        ['product:OpenSSH hostname:{d}','OpenSSH instances','recon'],
+        ['product:MySQL hostname:{d}','MySQL databases','recon'],
+        ['product:PostgreSQL hostname:{d}','PostgreSQL','recon'],
+        ['product:MongoDB hostname:{d}','MongoDB','recon'],
+        ['product:Redis hostname:{d}','Redis','recon'],
+        ['product:Elasticsearch hostname:{d}','Elasticsearch','recon'],
+        ['product:IIS hostname:{d}','Microsoft IIS','recon'],
+        ['product:Tomcat hostname:{d}','Apache Tomcat','recon'],
+        ['os:"Windows" hostname:{d}','Windows hosts','recon'],
+        ['os:"Linux" hostname:{d}','Linux hosts','recon'],
+        ['os:"FreeBSD" hostname:{d}','FreeBSD hosts','recon'],
+      ]],
+      ['Special Filters',[
+        ['has_screenshot:true hostname:{d}','Hosts with screenshots','advanced'],
+        ['vuln:CVE-2021-44228 hostname:{d}','Log4Shell vulnerable','advanced'],
+        ['vuln:CVE-2021-26855 hostname:{d}','Exchange ProxyLogon','advanced'],
+        ['tag:honeypot hostname:{d}','Honeypot detection','advanced'],
+        ['tag:ics hostname:{d}','Industrial control systems','advanced'],
+        ['tag:webcam hostname:{d}','Webcam devices','advanced'],
+        ['before:01/01/2024 hostname:{d}','Older scan results','filter'],
+        ['after:01/01/2024 hostname:{d}','Recent scan results','filter'],
+        ['country:US hostname:{d}','US-based hosts','filter'],
+        ['country:DE hostname:{d}','Germany-based hosts','filter'],
+        ['country:RU hostname:{d}','Russia-based hosts','filter'],
+        ['country:CN hostname:{d}','China-based hosts','filter'],
+      ]],
+    ]
+  },
+
+  github: {
+    name:'GitHub', icon:'🐙', cls:'github', subtitle:'github.com/search — Code search across billions of lines of public code',
+    url: q => `https://github.com/search?q=${E(q)}&type=code`,
+    cats:[
+      ['Credential & Secret Files',[
+        ['"{d}" extension:env','Domain in .env files','files'],
+        ['"{d}" filename:.env','Domain in .env by name','files'],
+        ['"{d}" filename:config.php','Domain in PHP configs','files'],
+        ['"{d}" filename:database.yml','Domain in DB configs','files'],
+        ['"{d}" filename:wp-config.php','WordPress configs','files'],
+        ['"{d}" filename:settings.py','Django settings','files'],
+        ['"{d}" filename:application.yml','Spring Boot configs','files'],
+        ['"{d}" extension:sql','Domain in SQL files','files'],
+        ['"{d}" extension:pem','PEM files with domain','files'],
+        ['"{d}" "BEGIN RSA PRIVATE KEY"','RSA private keys','files'],
+        ['"{d}" "BEGIN CERTIFICATE"','Certificate files','files'],
+        ['"{d}" "BEGIN EC PRIVATE KEY"','EC private keys','files'],
+        ['"{d}" "aws_secret_access_key"','AWS secrets','files'],
+        ['"{d}" "DB_PASSWORD"','Database passwords','files'],
+        ['"{d}" "MYSQL_PASSWORD"','MySQL passwords','files'],
+        ['"{d}" "SMTP_PASSWORD"','SMTP passwords','files'],
+        ['"{d}" "api_key"','API key references','files'],
+        ['"{d}" "secret_key"','Secret keys','files'],
+        ['"{d}" "access_token"','Access tokens','files'],
+        ['"{d}" "client_secret"','OAuth secrets','files'],
+        ['"{d}" "private_key"','Private keys','files'],
+        ['"{d}" extension:json "password"','Passwords in JSON','files'],
+        ['"{d}" extension:yml "password"','Passwords in YAML','files'],
+        ['"{d}" extension:js "apiKey"','API keys in JS','files'],
+        ['"{d}" extension:tf "secret"','Terraform secrets','files'],
+        ['"{d}" filename:credentials.json','Credential JSON files','files'],
+        ['"{d}" filename:.bash_history','Bash history files','files'],
+        ['"{d}" filename:.netrc','Netrc credential files','files'],
+      ]],
+      ['Repository Operators',[
+        ['org:"{d}" language:python','Python code in org','recon'],
+        ['org:"{d}" language:javascript','JS code in org','recon'],
+        ['org:"{d}" language:go','Go code in org','recon'],
+        ['org:"{d}" language:java','Java code in org','recon'],
+        ['org:"{d}" language:ruby','Ruby code in org','recon'],
+        ['org:"{d}" filename:.env','Env files in org','files'],
+        ['org:"{d}" "secret"','Secrets in org repos','content'],
+        ['org:"{d}" "password"','Passwords in org repos','content'],
+        ['user:"{d}" filename:.env','User env files','files'],
+        ['"{d}" path:.github/workflows','CI/CD workflows','recon'],
+        ['"{d}" in:readme','Domain in README files','recon'],
+        ['"{d}" in:file path:config','In config file paths','files'],
+        ['"{d}" stars:>100','Popular repos w/ domain','filter'],
+        ['"{d}" topic:security','Security topic repos','osint'],
+        ['"{d}" pushed:>2024-01-01','Recent activity','filter'],
+        ['"{d}" language:dockerfile','Dockerfiles w/ domain','files'],
+        ['"{d}" filename:docker-compose.yml','Docker Compose files','files'],
+        ['"{d}" filename:Makefile','Makefiles w/ domain','recon'],
+        ['"{d}" extension:tfvars','Terraform vars files','files'],
+        ['"{d}" filename:.travis.yml','Travis CI configs','recon'],
+      ]],
+      ['Issue & Commit Search',[
+        ['"{d}" is:issue is:open','Open issues about domain','osint'],
+        ['"{d}" is:pr is:merged "secret"','Merged PRs w/ secrets','content'],
+        ['"{d}" label:security','Security-labeled issues','osint'],
+        ['"{d}" is:issue "vulnerability"','Vulnerability issues','osint'],
+        ['"{d}" type:commit "credential"','Commits with credentials','content'],
+        ['"{d}" type:commit "remove password"','Password removal commits','osint'],
+        ['"{d}" type:commit "api key"','API key commits','osint'],
+        ['"{d}" is:pr "fix credentials"','Credential fix PRs','osint'],
+      ]],
+    ]
+  },
+
+  censys: {
+    name:'Censys', icon:'🔭', cls:'censys', subtitle:'search.censys.io — Internet-wide scan data for IPv4 hosts and certificates',
+    url: q => `https://search.censys.io/hosts?q=${E(q)}`,
+    cats:[
+      ['TLS Certificate Searches',[
+        ['services.tls.certificates.leaf_data.subject.common_name:"{d}"','Exact TLS cert CN','network'],
+        ['services.tls.certificates.leaf_data.subject.common_name:"*.{d}"','Wildcard TLS cert','network'],
+        ['services.tls.certificates.leaf_data.names:"{d}"','Domain in cert SANs','network'],
+        ['services.tls.certificates.leaf_data.subject.organization:"{d}"','Org in cert','network'],
+        ['services.tls.certificates.leaf_data.issuer.organization:"Let\'s Encrypt" and services.tls.certificates.leaf_data.names:"{d}"','Let\'s Encrypt + domain','network'],
+        ['services.tls.certificates.leaf_data.issuer.organization:"DigiCert" and services.tls.certificates.leaf_data.names:"{d}"','DigiCert + domain','network'],
+        ['services.tls.certificates.leaf_data.names:"{d}" and services.port:443','HTTPS cert names','network'],
+        ['services.tls.certificates.leaf_data.names:"{d}" and services.port:8443','Alt HTTPS certs','network'],
+      ]],
+      ['Host & Port Searches',[
+        ['services.port:443 and services.tls.certificates.leaf_data.subject.common_name:"{d}"','HTTPS hosts','network'],
+        ['services.port:22 and services.tls.certificates.leaf_data.subject.common_name:"{d}"','SSH + domain cert','network'],
+        ['services.port:3306 and services.tls.certificates.leaf_data.subject.common_name:"{d}"','MySQL + domain','network'],
+        ['services.port:27017 and services.tls.certificates.leaf_data.subject.common_name:"{d}"','MongoDB + domain','network'],
+        ['services.port:6379 and services.tls.certificates.leaf_data.subject.common_name:"{d}"','Redis + domain','network'],
+        ['services.port:5432 and services.tls.certificates.leaf_data.subject.common_name:"{d}"','PostgreSQL + domain','network'],
+        ['services.port:9200 and services.tls.certificates.leaf_data.subject.common_name:"{d}"','Elasticsearch + domain','network'],
+        ['services.port:3389 and services.tls.certificates.leaf_data.subject.common_name:"{d}"','RDP + domain','network'],
+        ['services.service_name:REDIS and services.tls.certificates.leaf_data.names:"{d}"','Redis service','network'],
+        ['services.transport_protocol:UDP and services.tls.certificates.leaf_data.names:"{d}"','UDP services','network'],
+      ]],
+      ['HTTP Response Searches',[
+        ['services.http.response.html_title:"admin" and services.tls.certificates.leaf_data.subject.common_name:"{d}"','Admin panels','recon'],
+        ['services.http.response.html_title:"login" and services.tls.certificates.leaf_data.subject.common_name:"{d}"','Login pages','recon'],
+        ['services.http.response.html_title:"dashboard" and services.tls.certificates.leaf_data.subject.common_name:"{d}"','Dashboards','recon'],
+        ['services.http.response.html_title:"Kibana" and services.tls.certificates.leaf_data.subject.common_name:"{d}"','Kibana','recon'],
+        ['services.http.response.html_title:"Grafana" and services.tls.certificates.leaf_data.subject.common_name:"{d}"','Grafana','recon'],
+        ['services.http.response.html_title:"Jenkins" and services.tls.certificates.leaf_data.subject.common_name:"{d}"','Jenkins','recon'],
+        ['services.http.response.status_code:200 and services.tls.certificates.leaf_data.subject.common_name:"{d}"','Live 200 OK pages','network'],
+        ['services.http.response.status_code:401 and services.tls.certificates.leaf_data.subject.common_name:"{d}"','Auth-required pages','network'],
+        ['autonomous_system.name:"{d}" and services.port:443','ASN HTTPS hosts','network'],
+        ['labels:cloud and services.tls.certificates.leaf_data.subject.common_name:"{d}"','Cloud-hosted','filter'],
+        ['labels:honeypot and services.tls.certificates.leaf_data.subject.common_name:"{d}"','Honeypots on domain','advanced'],
+        ['location.country_code:US and services.tls.certificates.leaf_data.subject.common_name:"{d}"','US-hosted','filter'],
+      ]],
+    ]
+  },
+
+  zoomeye: {
+    name:'ZoomEye', icon:'👁', cls:'zoomeye', subtitle:'zoomeye.org — Chinese cyberspace search engine for network devices',
+    url: q => `https://www.zoomeye.org/searchResult?q=${E(q)}`,
+    cats:[
+      ['Core ZoomEye',[
+        ['hostname:{d}','Hostname for domain','network'],
+        ['ssl:"{d}"','SSL cert for domain','network'],
+        ['app:"Apache" hostname:{d}','Apache on domain','recon'],
+        ['app:"nginx" hostname:{d}','Nginx on domain','recon'],
+        ['app:"IIS" hostname:{d}','IIS on domain','recon'],
+        ['app:"WordPress" hostname:{d}','WordPress','recon'],
+        ['app:"Joomla" hostname:{d}','Joomla CMS','recon'],
+        ['app:"phpMyAdmin" hostname:{d}','phpMyAdmin','recon'],
+        ['app:"Jenkins" hostname:{d}','Jenkins CI','recon'],
+        ['app:"Tomcat" hostname:{d}','Apache Tomcat','recon'],
+        ['app:"Drupal" hostname:{d}','Drupal CMS','recon'],
+        ['app:"MySQL" hostname:{d}','MySQL database','recon'],
+        ['app:"MongoDB" hostname:{d}','MongoDB','recon'],
+        ['app:"Redis" hostname:{d}','Redis','recon'],
+        ['app:"Elasticsearch" hostname:{d}','Elasticsearch','recon'],
+        ['title:"login" hostname:{d}','Login pages','recon'],
+        ['title:"admin" hostname:{d}','Admin pages','recon'],
+        ['title:"dashboard" hostname:{d}','Dashboards','recon'],
+        ['title:"Grafana" hostname:{d}','Grafana','recon'],
+        ['title:"Kibana" hostname:{d}','Kibana','recon'],
+      ]],
+      ['Port & Service Filters',[
+        ['port:3306 hostname:{d}','MySQL port 3306','network'],
+        ['port:27017 hostname:{d}','MongoDB port 27017','network'],
+        ['port:6379 hostname:{d}','Redis port 6379','network'],
+        ['port:5432 hostname:{d}','PostgreSQL port 5432','network'],
+        ['port:9200 hostname:{d}','Elasticsearch port 9200','network'],
+        ['port:22 hostname:{d}','SSH port 22','network'],
+        ['port:21 hostname:{d}','FTP port 21','network'],
+        ['port:3389 hostname:{d}','RDP port 3389','network'],
+        ['port:5900 hostname:{d}','VNC port 5900','network'],
+        ['port:8080 hostname:{d}','Alt HTTP port 8080','network'],
+        ['port:8443 hostname:{d}','Alt HTTPS port 8443','network'],
+        ['port:8888 hostname:{d}','Jupyter port 8888','network'],
+        ['service:http hostname:{d}','HTTP services','network'],
+        ['service:https hostname:{d}','HTTPS services','network'],
+        ['service:ssh hostname:{d}','SSH services','network'],
+        ['os:"Windows" hostname:{d}','Windows hosts','recon'],
+        ['os:"Linux" hostname:{d}','Linux hosts','recon'],
+        ['country:US hostname:{d}','US hosts','filter'],
+        ['country:DE hostname:{d}','Germany hosts','filter'],
+        ['country:CN hostname:{d}','China hosts','filter'],
+        ['cidr:192.168.0.0/24 hostname:{d}','CIDR range','network'],
+        ['ver:"1.0" app:nginx hostname:{d}','Specific version','recon'],
+        ['keywords:"admin" hostname:{d}','Admin in meta keywords','content'],
+        ['keywords:"login" hostname:{d}','Login in meta keywords','content'],
+        ['city:"New York" hostname:{d}','NYC-located hosts','filter'],
+      ]],
+    ]
+  },
+
+  yahoo: {
+    name:'Yahoo', icon:'💜', cls:'yahoo', subtitle:'search.yahoo.com — Powered by Bing\'s index, supports most Bing operators',
+    url: q => `https://search.yahoo.com/search?p=${E(q)}`,
+    cats:[
+      ['Yahoo Search Operators',[
+        ['site:{d}','All pages for domain','recon'],
+        ['site:{d} filetype:pdf','PDF files','files'],
+        ['site:{d} filetype:doc OR filetype:docx','Word documents','files'],
+        ['site:{d} filetype:xls OR filetype:xlsx','Excel files','files'],
+        ['site:{d} filetype:sql','SQL dumps','files'],
+        ['site:{d} filetype:env','Env files','files'],
+        ['site:{d} filetype:log','Log files','files'],
+        ['site:{d} filetype:bak','Backup files','files'],
+        ['site:{d} filetype:xml','XML files','files'],
+        ['site:{d} filetype:json','JSON files','files'],
+        ['site:{d} filetype:yml','YAML files','files'],
+        ['site:{d} filetype:cfg','Config files','files'],
+        ['site:{d} intitle:login','Login pages','recon'],
+        ['site:{d} intitle:admin','Admin pages','recon'],
+        ['site:{d} intitle:dashboard','Dashboards','recon'],
+        ['site:{d} intitle:"index of"','Directory listings','recon'],
+        ['site:{d} intitle:phpMyAdmin','phpMyAdmin','recon'],
+        ['site:{d} inurl:admin','Admin URLs','recon'],
+        ['site:{d} inurl:login','Login URLs','recon'],
+        ['site:{d} inurl:wp-admin','WordPress admin','recon'],
+        ['site:{d} inurl:phpmyadmin','phpMyAdmin URL','recon'],
+        ['site:{d} inurl:cpanel','cPanel URL','recon'],
+        ['site:{d} inurl:webmail','Webmail URL','recon'],
+        ['site:{d} inurl:api','API endpoints','recon'],
+        ['site:{d} inurl:backup','Backup URLs','files'],
+        ['site:{d} inbody:"password"','Password in body','content'],
+        ['site:{d} inbody:"API key"','API keys','content'],
+        ['site:{d} inbody:"DB_PASSWORD"','DB passwords','content'],
+        ['"@{d}" -site:{d}','External email mentions','osint'],
+        ['"{d}" site:linkedin.com','LinkedIn employees','osint'],
+        ['"{d}" site:pastebin.com','Pastebin entries','osint'],
+        ['site:*.{d} -www','Subdomains','recon'],
+        ['site:{d} inurl:swagger','Swagger API docs','recon'],
+        ['site:{d} inurl:graphql','GraphQL endpoints','recon'],
+        ['site:{d} inurl:api/v1','API v1 paths','recon'],
+      ]],
+    ]
+  },
+
+  baidu: {
+    name:'Baidu', icon:'🇨🇳', cls:'baidu', subtitle:'baidu.com — China\'s dominant search engine with CJK language support',
+    url: q => `https://www.baidu.com/s?wd=${E(q)}`,
+    cats:[
+      ['Baidu Search Operators',[
+        ['site:{d}','All indexed pages','recon'],
+        ['site:{d} filetype:pdf','PDF files','files'],
+        ['site:{d} filetype:doc','Word documents','files'],
+        ['site:{d} filetype:xls','Excel files','files'],
+        ['site:{d} filetype:ppt','PowerPoint files','files'],
+        ['site:{d} filetype:txt','Text files','files'],
+        ['site:{d} filetype:sql','SQL dumps','files'],
+        ['site:{d} filetype:log','Log files','files'],
+        ['site:{d} filetype:bak','Backup files','files'],
+        ['site:{d} filetype:xml','XML files','files'],
+        ['site:{d} filetype:csv','CSV files','files'],
+        ['site:{d} filetype:mdb','Access DB files','files'],
+        ['site:{d} intitle:login','Login pages','recon'],
+        ['site:{d} intitle:admin','Admin pages','recon'],
+        ['site:{d} intitle:dashboard','Dashboards','recon'],
+        ['site:{d} intitle:"index of"','Directory listings','recon'],
+        ['site:{d} intitle:phpMyAdmin','phpMyAdmin panels','recon'],
+        ['site:{d} inurl:admin','Admin URLs','recon'],
+        ['site:{d} inurl:login','Login URLs','recon'],
+        ['site:{d} inurl:phpmyadmin','phpMyAdmin URL','recon'],
+        ['site:{d} inurl:upload','Upload pages','recon'],
+        ['site:{d} inurl:cpanel','cPanel URL','recon'],
+        ['site:{d} inurl:webmail','Webmail','recon'],
+        ['site:{d} inurl:wp-admin','WordPress admin','recon'],
+        ['site:{d} inanchor:download','Download anchor links','content'],
+        ['site:{d} inanchor:login','Login anchor links','content'],
+        ['site:{d} inanchor:admin','Admin anchor links','content'],
+        ['"@{d}"','Email addresses for domain','osint'],
+        ['related:{d}','Similar websites to target','osint'],
+        ['site:{d} intext:password','Password mentions','content'],
+        ['site:{d} intext:"API key"','API key references','content'],
+        ['"{d}" -site:{d}','External domain mentions','osint'],
+        ['site:{d} filetype:cfg','Config files','files'],
+        ['site:{d} filetype:ini','INI config files','files'],
+        ['site:*.{d}','All subdomains','recon'],
+      ]],
+    ]
+  },
+
+  archive: {
+    name:'Archive.org', icon:'📦', cls:'archive', subtitle:'archive.org — Historical web snapshots via Wayback Machine and CDX API',
+    url: q => `https://web.archive.org/web/*/${q}`,
+    cats:[
+      ['Wayback Machine URL Patterns',[
+        ['{d}','All snapshots of domain','osint'],
+        ['{d}/*','All archived pages on domain','osint'],
+        ['{d}/admin*','Archived admin pages','recon'],
+        ['{d}/login*','Archived login pages','recon'],
+        ['{d}/api/*','Archived API endpoints','recon'],
+        ['{d}/*.pdf','Archived PDF files','files'],
+        ['{d}/*.sql','Archived SQL files','files'],
+        ['{d}/*.env','Archived env files','files'],
+        ['{d}/*.bak','Archived backup files','files'],
+        ['{d}/backup*','Archived backup paths','files'],
+        ['{d}/*.php','Archived PHP files','recon'],
+        ['{d}/*.js','Archived JS files','recon'],
+        ['{d}/*.json','Archived JSON endpoints','recon'],
+        ['{d}/config*','Archived config pages','files'],
+        ['https://web.archive.org/web/20200101000000*/{d}','2020 snapshot','osint'],
+        ['https://web.archive.org/web/20150101000000*/{d}','2015 snapshot','osint'],
+        ['https://web.archive.org/web/20100101000000*/{d}','2010 snapshot','osint'],
+      ]],
+      ['CDX API Queries',[
+        ['http://web.archive.org/cdx/search/cdx?url={d}/*&output=json&fl=original,timestamp','All URLs as JSON','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url=*.{d}&output=text&fl=original&collapse=urlkey','Subdomain enumeration','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url={d}/*&output=json&filter=statuscode:200','200 OK URLs only','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url={d}/*&output=json&filter=mimetype:application/pdf','PDF archives','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url={d}/*&output=json&fl=original&collapse=urlkey&filter=statuscode:200','Unique live URLs','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url={d}/*&output=json&from=20200101&to=20231231','2020–2023 URLs','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url={d}/*.php&output=json','PHP files only','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url={d}/*.js&output=json','JS files archived','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url={d}/*.json&output=json','JSON endpoints','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url={d}/*.xml&output=json','XML files','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url={d}/*.sql&output=json','SQL files','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url={d}/*.env&output=json','Env files','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url={d}/admin*&output=json','Admin paths','advanced'],
+        ['http://web.archive.org/cdx/search/cdx?url={d}/api/*&output=json','API paths','advanced'],
+        ['https://timetravel.mementoweb.org/api/json/20200101000000/{d}','Memento Time Travel API','advanced'],
+      ]],
+    ]
+  },
+
+  grep: {
+    name:'Grep.app', icon:'🔎', cls:'grep', subtitle:'grep.app — Regex-powered code search across 500,000+ public GitHub repositories',
+    url: q => `https://grep.app/search?q=${E(q)}`,
+    cats:[
+      ['Domain-Targeted Queries',[
+        ['"{d}"','Literal domain search','recon'],
+        ['"{d}" lang:python','Domain in Python files','recon'],
+        ['"{d}" lang:javascript','Domain in JavaScript','recon'],
+        ['"{d}" lang:ruby','Domain in Ruby','recon'],
+        ['"{d}" lang:go','Domain in Go','recon'],
+        ['"{d}" lang:java','Domain in Java','recon'],
+        ['"{d}" lang:php','Domain in PHP','recon'],
+        ['"{d}" lang:shell','Domain in shell scripts','recon'],
+        ['"{d}" lang:yaml','Domain in YAML','recon'],
+        ['"{d}" lang:dockerfile','Domain in Dockerfiles','recon'],
+        ['"{d}" path:**.env','Domain in .env files','files'],
+        ['"{d}" path:**config*','Domain in config files','files'],
+        ['"{d}" path:**secret*','Domain in secret files','files'],
+        ['"{d}" path:**.sql','Domain in SQL files','files'],
+        ['"{d}" path:**.key','Domain in key files','files'],
+        ['"{d}" path:**.pem','Domain in PEM files','files'],
+        ['"{d}" path:**credentials*','Domain in credential files','files'],
+        ['"{d}" path:**.yml','Domain in YAML files','files'],
+        ['"{d}" path:**settings*','Domain in settings files','files'],
+        ['"{d}" path:**docker-compose*','Docker Compose files','files'],
+      ]],
+      ['Regex Patterns',[
+        ['/password.*=.*["\'].+["\']/ lang:python','Hardcoded passwords (Python)','advanced'],
+        ['/api[_-]?key.*=.*["\'].{20,}["\']/ lang:javascript','API keys (JS)','advanced'],
+        ['/BEGIN (RSA|EC|DSA) PRIVATE KEY/','Private key headers','advanced'],
+        ['/aws_secret_access_key.*=.*\\S+/','AWS secret patterns','advanced'],
+        ['/password\\s*=\\s*["\']\\w+["\']/','Password assignments','advanced'],
+        ['/smtp.*password/i','SMTP password configs','advanced'],
+        ['/db_password.*=.*["\'].+["\']/i','DB password patterns','advanced'],
+        ['/secret.*key.*=.*["\'].{16,}["\']/i','Secret key patterns','advanced'],
+        ['/mongodb\\+srv:\\/\\/.+@.+\\.mongodb\\.net/','MongoDB Atlas URIs','advanced'],
+        ['/postgres:\\/\\/.+:.+@.+\\/\\w+/','PostgreSQL URIs','advanced'],
+        ['/redis:\\/\\/.+:.+@.+:\\d+/','Redis URIs with auth','advanced'],
+        ['/https?:\\/\\/[\\w-]+\\.amazonaws\\.com\\/[\\w-]+/','AWS bucket URLs','advanced'],
+        ['/Authorization:\\s*Bearer\\s+[A-Za-z0-9._-]{20,}/','Bearer tokens','advanced'],
+        ['/-----BEGIN [A-Z]+ PRIVATE KEY-----/','Any private key','advanced'],
+        ['/AKIA[0-9A-Z]{16}/','AWS access key IDs','advanced'],
+      ]],
+    ]
+  },
+};
+
+// ══════════════════════════════════════════════════════════
+// POWER COMBOS
+// ══════════════════════════════════════════════════════════
+const COMBOS = [
+  { title:'🔍 Google: Subdomain Discovery', note:'Enumerate all subdomains indexed by Google.', code:`site:*.{d} -www\nsite:*.{d} inurl:dev OR inurl:staging OR inurl:test\nsite:*.{d} inurl:admin\nsite:*.{d} inurl:api\nsite:*.{d} inurl:vpn` },
+  { title:'🔍 Google: Open Directory Listings', note:'Find misconfigured servers exposing file directories.', code:`site:{d} intitle:"index of" "parent directory"\nsite:{d} intitle:"index of" /backup\nsite:{d} intitle:"index of" /config\nsite:{d} intitle:"index of" "last modified"` },
+  { title:'🔍 Google: Exposed Config & Credentials', note:'Locate publicly accessible configuration files.', code:`site:{d} filetype:env intext:DB_PASSWORD\nsite:{d} filetype:ini intext:password\nsite:{d} ext:xml intext:connectionString\nsite:{d} intext:"BEGIN RSA PRIVATE KEY"` },
+  { title:'🔍 Google: Login & Admin Pages', note:'Find all authentication portals on target domain.', code:`site:{d} intitle:"login" OR intitle:"admin"\nsite:{d} inurl:admin/login\nsite:{d} intitle:"Sign In" inurl:login\nsite:{d} inurl:wp-admin OR inurl:phpmyadmin\nsite:{d} inurl:cpanel OR inurl:webmail` },
+  { title:'🔍 Google: Sensitive Documents', note:'Find internal documents, reports, and spreadsheets.', code:`site:{d} filetype:pdf OR filetype:docx OR filetype:xlsx\nsite:{d} filetype:xls "email" OR "phone"\nsite:{d} filetype:pdf "confidential"\nsite:{d} filetype:csv intext:password` },
+  { title:'🔍 Google: API & Endpoint Discovery', note:'Map out API endpoints and services.', code:`site:{d} inurl:/api/v1 OR inurl:/api/v2\nsite:{d} inurl:swagger OR inurl:swagger-ui\nsite:{d} inurl:graphql OR inurl:graphiql\nsite:{d} inurl:webhook\nsite:{d} filetype:json inurl:api` },
+  { title:'🔍 Google: Cloud Storage Recon', note:'Find domain assets in cloud storage buckets.', code:`site:s3.amazonaws.com "{d}"\nsite:blob.core.windows.net "{d}"\nsite:storage.googleapis.com "{d}"\nsite:drive.google.com "{d}"` },
+  { title:'🔍 Google: Error & Debug Exposure', note:'Find verbose error messages revealing tech stack.', code:`site:{d} intext:"Warning: mysql"\nsite:{d} intext:"Fatal error:" intext:"on line"\nsite:{d} intext:"Stack trace:"\nsite:{d} intext:"DEBUG = True"\nsite:{d} intext:"Traceback (most recent"` },
+  { title:'🐙 GitHub: Leaked Secrets', note:'Find accidentally committed secrets in public repos.', code:`"{d}" filename:.env "SECRET_KEY" OR "API_KEY"\n"{d}" extension:pem "BEGIN RSA PRIVATE KEY"\n"{d}" filename:credentials.json "client_secret"\n"{d}" path:.github/workflows "AWS_SECRET"\n"{d}" extension:sql intext:password` },
+  { title:'🐙 GitHub: Database Connections', note:'Find database connection strings and credentials.', code:`"{d}" extension:sql "INSERT INTO" "password"\n"{d}" filename:database.yml password NOT "example"\n"{d}" "mongodb+srv://" extension:js OR extension:env\n"{d}" "postgres://" filename:.env` },
+  { title:'📡 Shodan: Full Domain Sweep', note:'Comprehensive network exposure scan for target.', code:`hostname:{d}\nssl.cert.subject.cn:"*.{d}"\nhttp.title:"admin" hostname:{d}\nport:27017 hostname:{d}\nport:6379 hostname:{d}` },
+  { title:'📡 Shodan: Exposed Databases', note:'Find unauthenticated database instances.', code:`port:27017 hostname:{d} (MongoDB)\nport:9200 hostname:{d} (Elasticsearch)\nport:6379 hostname:{d} (Redis)\nport:5432 hostname:{d} (PostgreSQL)\nport:3306 hostname:{d} (MySQL)` },
+  { title:'🇷🇺 Yandex: Full Recon Chain', note:'Yandex-specific multi-operator search chain. Use on both yandex.com and yandex.ru.', code:`site:{d} (all indexed pages)\nhost:{d} mime:pdf (PDF files)\nrhost:{d} (backlinks/referrers)\nsite:{d} title:"login" (login pages)\nsite:{d} intext:"DB_PASSWORD" (credential exposure)` },
+  { title:'🔭 Censys: TLS Certificate Mining', note:'Use certificate transparency logs to map infrastructure.', code:`services.tls.certificates.leaf_data.subject.common_name:"*.{d}"\nservices.tls.certificates.leaf_data.names:"{d}" and services.port:443\nservices.tls.certificates.leaf_data.subject.common_name:"{d}" and services.port:22` },
+  { title:'📦 Archive.org: Historical Recon', note:'Dig into historical snapshots for removed content.', code:`web.archive.org/web/*/{d}/admin*\nweb.archive.org/web/*/{d}/*.env\ncdx?url=*.{d}&output=json&fl=original&collapse=urlkey\ncdx?url={d}/*&filter=statuscode:200&output=json` },
+  { title:'⚡ Multi-Engine OSINT Chain', note:'Run sequentially for comprehensive target profiling.', code:`1. site:{d} -www (Google subdomain enum)\n2. *.{d} (CDX API wildcard)\n3. hostname:{d} (Shodan host enum)\n4. ssl.cert.subject.cn:"*.{d}" (Censys certs)\n5. "{d}" filename:.env (GitHub secrets)\n6. rhost:{d} (Yandex backlinks)` },
+  { title:'🔎 Grep.app: Hardcoded Secrets', note:'Regex patterns for finding credentials in source code.', code:`/password\\s*=\\s*['"]\w+["']/\n/api[_-]?key\\s*[=:]\\s*['"]\w{20,}["']/\n/BEGIN (RSA|EC|DSA) PRIVATE KEY/\n/aws_secret_access_key\\s*=\\s*\\S+/\n/AKIA[0-9A-Z]{16}/` },
+];
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let targetDomain = '';
+const DEFAULT_DOMAIN = 'example.com';
+
+function resolveDomain() {
+  return targetDomain.trim() || DEFAULT_DOMAIN;
+}
+
+function applyDomain(template) {
+  return template.replace(/\{d\}/g, resolveDomain());
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════
+function renderAll() {
+  const main = document.getElementById('dork-main');
+  main.innerHTML = '';
+  let totalCards = 0;
+
+  Object.entries(DB).forEach(([id, eng]) => {
+    const section = document.createElement('section');
+    section.className = `engine-section ${eng.cls}`;
+    section.id = id;
+
+    // Count dorks
+    const count = eng.cats.reduce((sum, cat) => sum + cat[1].length, 0);
+    totalCards += count;
+
+    // Header
+    const isDual = !!eng.dual;
+    section.innerHTML = `
+      <div class="engine-header">
+        <div class="engine-icon">${eng.icon}</div>
+        <div>
+          <div class="engine-title">${eng.name}</div>
+          <div class="engine-subtitle">${eng.subtitle}</div>
+        </div>
+        ${isDual ? '<span class="engine-dual-badge">yandex.com + yandex.ru</span>' : ''}
+        <div class="engine-count">${count} queries</div>
+      </div>`;
+
+    // Categories
+    eng.cats.forEach(([catName, dorks]) => {
+      const group = document.createElement('div');
+      group.className = 'category-group';
+      group.innerHTML = `<div class="category-label">${catName}</div>`;
+
+      const grid = document.createElement('div');
+      grid.className = 'dork-grid';
+
+      dorks.forEach(([template, desc, tag]) => {
+        const card = document.createElement('div');
+        card.className = 'dork-card';
+        card.dataset.template = template;
+        card.dataset.engine = id;
+        card.dataset.desc = desc;
+
+        const resolved = applyDomain(template);
+
+        // Build search buttons
+        let btnHtml = '';
+        if (isDual) {
+          btnHtml = `
+            <button class="search-btn com" title="Search on yandex.com" onclick="openSearch(event,'com','${id}',this.closest('.dork-card'))">yandex.com ↗</button>
+            <button class="search-btn ru" title="Search on yandex.ru" onclick="openSearch(event,'ru','${id}',this.closest('.dork-card'))">yandex.ru ↗</button>`;
+        } else {
+          btnHtml = `<button class="search-btn" title="Open in ${eng.name}" onclick="openSearch(event,'main','${id}',this.closest('.dork-card'))">🔍 Search ↗</button>`;
+        }
+
+        card.innerHTML = `
+          <div class="dork-operator" onclick="copyCard(event,this.closest('.dork-card'))">${escHtml(resolved)}</div>
+          <div class="dork-desc">${escHtml(desc)}</div>
+          <div class="card-footer">
+            <span class="dork-tag tag-${tag}">${tag}</span>
+            <div class="btn-row">
+              ${btnHtml}
+              <button class="copy-btn" title="Copy query" onclick="copyCard(event,this.closest('.dork-card'))">⎘ Copy</button>
+            </div>
+          </div>`;
+
+        grid.appendChild(card);
+      });
+
+      group.appendChild(grid);
+      section.appendChild(group);
+    });
+
+    main.appendChild(section);
+  });
+
+  document.getElementById('total-count').textContent = totalCards + '+';
+}
+
+function renderCombos() {
+  const grid = document.getElementById('combo-grid');
+  grid.innerHTML = COMBOS.map(c => `
+    <div class="combo-card">
+      <div class="combo-title">${c.title}</div>
+      <div class="combo-note">${c.note}</div>
+      <pre>${escHtml(applyDomain(c.code))}</pre>
+    </div>`).join('');
+}
+
+function updateAllCards() {
+  document.querySelectorAll('.dork-card').forEach(card => {
+    const template = card.dataset.template;
+    if (!template) return;
+    const resolved = applyDomain(template);
+    const op = card.querySelector('.dork-operator');
+    if (op) op.textContent = resolved;
+  });
+  renderCombos();
+}
+
+// ══════════════════════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════════════════════
+function openSearch(evt, mode, engineId, card) {
+  evt.stopPropagation();
+  const template = card.dataset.template;
+  const query = applyDomain(template);
+  const eng = DB[engineId];
+  let url;
+  if (mode === 'com') url = eng.urlCom(query);
+  else if (mode === 'ru') url = eng.urlRu(query);
+  else url = eng.url ? eng.url(query) : `https://web.archive.org/web/*/${query}`;
+  window.open(url, '_blank', 'noopener');
+}
+
+function copyCard(evt, card) {
+  evt.stopPropagation();
+  const template = card.dataset.template;
+  const resolved = applyDomain(template);
+  navigator.clipboard.writeText(resolved).then(() => {
+    card.classList.add('copied');
+    setTimeout(() => card.classList.remove('copied'), 1200);
+    showToast('Copied: ' + resolved.substring(0, 50) + (resolved.length > 50 ? '…' : ''));
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = resolved; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('Copied!');
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = '⎘ ' + msg;
+  t.classList.add('show');
+  clearTimeout(window._tt);
+  window._tt = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════════════════════════
+// DOMAIN INPUT
+// ══════════════════════════════════════════════════════════
+const domainInput = document.getElementById('target-domain');
+const statusDot = document.getElementById('status-dot');
+const statusText = document.getElementById('status-text');
+const clearBtn = document.getElementById('target-clear');
+
+domainInput.addEventListener('input', () => {
+  targetDomain = domainInput.value.trim().replace(/^https?:\/\//i,'').replace(/\/.*$/,'');
+  if (targetDomain) {
+    statusDot.classList.add('active');
+    statusText.classList.add('active');
+    statusText.textContent = `✓ All ${document.querySelectorAll('.dork-card').length} queries are now targeted at: ${targetDomain}`;
+    statusText.style.color = 'var(--accent3)';
+    clearBtn.style.display = 'block';
+  } else {
+    statusDot.classList.remove('active');
+    statusText.classList.remove('active');
+    statusText.textContent = 'Enter a domain to generate targeted dorks for all engines';
+    statusText.style.color = '';
+    clearBtn.style.display = 'none';
+  }
+  updateAllCards();
+});
+
+clearBtn.addEventListener('click', () => {
+  domainInput.value = '';
+  targetDomain = '';
+  statusDot.classList.remove('active');
+  statusText.classList.remove('active');
+  statusText.textContent = 'Enter a domain to generate targeted dorks for all engines';
+  statusText.style.color = '';
+  clearBtn.style.display = 'none';
+  updateAllCards();
+});
+clearBtn.style.display = 'none';
+
+// ══════════════════════════════════════════════════════════
+// FILTER SEARCH
+// ══════════════════════════════════════════════════════════
+document.getElementById('search-input').addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  const cards = document.querySelectorAll('.dork-card');
+  let visible = 0;
+  cards.forEach(card => {
+    const text = (card.dataset.template + ' ' + card.dataset.desc).toLowerCase();
+    const match = !q || text.includes(q);
+    card.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  document.querySelectorAll('.category-group').forEach(g => {
+    const hasVisible = [...g.querySelectorAll('.dork-card')].some(c => c.style.display !== 'none');
+    g.style.display = hasVisible ? '' : 'none';
+  });
+  document.querySelectorAll('.engine-section').forEach(s => {
+    const hasVisible = [...s.querySelectorAll('.dork-card')].some(c => c.style.display !== 'none');
+    s.style.display = hasVisible ? '' : 'none';
+  });
+  document.getElementById('search-count').textContent = q ? `${visible} results` : '';
+});
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+renderAll();
+renderCombos();
+
+// Intersection observer animation
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) { entry.target.style.animationDelay = '0ms'; observer.unobserve(entry.target); }
+  });
+}, { threshold: 0.05 });
+document.querySelectorAll('.engine-section').forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
