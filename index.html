@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dorking Reference Hub – Advanced Search Operators</title>
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --surface: #131a2b;
+            --border: #1f2a44;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-glow: rgba(88, 166, 255, 0.15);
+            --success: #3fb950;
+            --warning: #d2991d;
+            --danger: #f85149;
+            --purple: #bc8cff;
+            --code-bg: #0d1117;
+            --shadow: 0 4px 24px rgba(0,0,0,0.4);
+            --radius: 12px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 1rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        .sidebar h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar nav a {
+            display: block;
+            padding: 0.45rem 0.75rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            margin-bottom: 2px;
+        }
+        .sidebar nav a:hover,
+        .sidebar nav a:focus {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+        /* Main */
+        .main {
+            margin-left: 280px;
+            flex: 1;
+            padding: 2rem 2.5rem;
+            max-width: 1200px;
+        }
+        .hero {
+            background: linear-gradient(135deg, var(--surface), #0d1628);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+        .hero h1 {
+            font-size: 2.4rem;
+            background: linear-gradient(90deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+        .disclaimer {
+            background: rgba(248, 81, 73, 0.08);
+            border-left: 4px solid var(--danger);
+            border-radius: 6px;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0 2rem;
+            font-size: 0.9rem;
+            color: var(--danger);
+        }
+        .disclaimer strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        section {
+            margin-bottom: 2.5rem;
+        }
+        section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid var(--border);
+        }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        .card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            background: rgba(31, 42, 68, 0.4);
+        }
+        .dork-cell {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            background: var(--code-bg);
+            border-radius: 4px;
+            padding: 0.3rem 0.5rem;
+            font-size: 0.85rem;
+            word-break: break-word;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        .copy-btn {
+            background: var(--border);
+            border: none;
+            color: var(--text-muted);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: var(--transition);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .copy-btn:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+        .copy-btn.copied {
+            background: var(--success);
+            color: #fff;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem 0 1rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            .main {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <h2>⚡ Dorking Hub</h2>
+        <nav>
+            <a href="#google">🔍 Google</a>
+            <a href="#bing">🅱️ Bing</a>
+            <a href="#duckduckgo">🦆 DuckDuckGo</a>
+            <a href="#yandex">🇷🇺 Yandex</a>
+            <a href="#shodan">🛰️ Shodan</a>
+            <a href="#github">🐙 GitHub</a>
+            <a href="#about">📖 About</a>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <div class="hero">
+            <h1>Dorking Reference Hub</h1>
+            <p>Complete archive of advanced search operators for Google, Bing, DuckDuckGo, Yandex, Shodan, and GitHub. Built for security researchers, OSINT analysts, and bug bounty hunters.</p>
+        </div>
+
+        <div class="disclaimer">
+            <strong>⚠️ Ethical Use Only</strong>
+            These techniques are for authorized security research, penetration testing, and educational purposes. Unauthorized access to systems or data is illegal. Always obtain proper permission before testing. Use responsibly and comply with all applicable laws.
+        </div>
+
+        <!-- Google -->
+        <section id="google">
+            <h2>🔍 Google Dorks</h2>
+            <div class="card">
+                <h3>Core Operators</h3>
+                <table>
+                    <thead>
+                        <tr><th>Operator</th><th>Description</th><th>Example</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>site:</code></td>
+                            <td>Restrict to domain</td>
+                            <td><div class="dork-cell"><code>site:example.com</code><button class="copy-btn" title="Copy">📋</button></div></td>
+                        </tr>
+                        <tr>
+                            <td><code>filetype:</code></td>
+                            <td>Search by file type</td>
+                            <td><div class="dork-cell"><code>filetype:pdf</code><button class="copy-btn" title="Copy">📋</button></div></td>
+                        </tr>
+                        <tr>
+                            <td><code>intitle:</code></td>
+                            <td>Keyword in page title</td>
+                            <td><div class="dork-cell"><code>intitle:"index of"</code><button class="copy-btn" title="Copy">📋</button></div></td>
+                        </tr>
+                        <tr>
+                            <td><code>inurl:</code></td>
+                            <td>Keyword in URL</td>
+                            <td><div class="dork-cell"><code>inurl:admin</code><button class="copy-btn" title="Copy">📋</button></div></td>
+                        </tr>
+                        <tr>
+                            <td><code>intext:</code></td>
+                            <td>Keyword in body text</td>
+                            <td><div class="dork-cell"><code>intext:"password"</code><button class="copy-btn" title="Copy">📋</button></div></td>
+                        </tr>
+                        <tr>
+                            <td><code>ext:</code></td>
+                            <td>File extension</td>
+                            <td><div class="dork-cell"><code>ext:sql</code><button class="copy-btn" title="Copy">📋</button></div></td>
+                        </tr>
+                        <tr>
+                            <td><code>-</code></td>
+                            <td>Exclude term</td>
+                            <td><div class="dork-cell"><code>-wordpress</code><button class="copy-btn" title="Copy">📋</button></div></td>
+                        </tr>
+                        <tr>
+                            <td><code>" "</code></td>
+                            <td>Exact phrase</td>
+                            <td><div class="dork-cell"><code>"database password"</code><button class="copy-btn" title="Copy">📋</button></div></td>
+                        </tr>
+                        <tr>
+                            <td><code>*</code></td>
+                            <td>Wildcard</td>
+                            <td><div class="dork-cell"><code>admin * login</code><button class="copy-btn" title="Copy">📋</button></div></td>
+                        </tr>
+                        <tr>
+                            <td><code>OR</code></td>
+                            <td>Logical OR</td>
+                            <td><div class="dork-cell"><code>php OR asp</code><button class="copy-btn" title="Copy">📋</button></div></td>
+                        </tr>
+                        <tr>
+                            <td><code>..</code></td>
+                            <td>Number range</td>
+                            <td><div class="dork-cell"><code>camera $50..$200</code><button class="copy-btn" title="Copy">📋</button></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h3>Security & Recon Dorks</h3>
+                <table>
+                    <thead>
+                        <tr><th>Purpose</th><th>Dork</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Exposed .env files</td><td><div class="dork-cell"><code>site:target.com filetype:env DB_PASSWORD</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Open directories</td><td><div class="dork-cell"><code>intitle:"index of" "parent directory"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>SQL dumps</td><td><div class="dork-cell"><code>filetype:sql "dump" "password"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Backup files</td><td><div class="dork-cell"><code>site:target.com filetype:bak inurl:web.config</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Login portals</td><td><div class="dork-cell"><code>site:target.com intitle:login</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Exposed Git repos</td><td><div class="dork-cell"><code>site:target.com intitle:"index of" ".git"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>API keys in code</td><td><div class="dork-cell"><code>site:pastebin.com "api_key"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Email lists</td><td><div class="dork-cell"><code>filetype:txt inurl:"email.txt"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Bing -->
+        <section id="bing">
+            <h2>🅱️ Bing Dorks</h2>
+            <div class="card">
+                <h3>Core Operators</h3>
+                <table>
+                    <thead>
+                        <tr><th>Operator</th><th>Description</th><th>Example</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>site:</code></td><td>Limit to domain</td><td><div class="dork-cell"><code>site:example.com</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>filetype:</code></td><td>Filter by file type</td><td><div class="dork-cell"><code>filetype:pdf</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>intitle:</code></td><td>Word in page title</td><td><div class="dork-cell"><code>intitle:login</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>inurl:</code></td><td>Word in URL</td><td><div class="dork-cell"><code>inurl:admin</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>inbody:</code></td><td>Word in body text</td><td><div class="dork-cell"><code>inbody:password</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>inanchor:</code></td><td>Word in anchor text</td><td><div class="dork-cell"><code>inanchor:click</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>contains:</code></td><td>Page contains file type</td><td><div class="dork-cell"><code>contains:pdf</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>ip:</code></td><td>Search by IP address</td><td><div class="dork-cell"><code>ip:192.168.1.1</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>language:</code></td><td>Filter by language</td><td><div class="dork-cell"><code>language:en</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>near:</code></td><td>Words near each other</td><td><div class="dork-cell"><code>seo near:5 tips</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h3>Recon Examples</h3>
+                <table>
+                    <thead>
+                        <tr><th>Purpose</th><th>Dork</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Open directories</td><td><div class="dork-cell"><code>site:target.com intitle:"index of"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>PDF reports</td><td><div class="dork-cell"><code>site:target.com filetype:pdf confidential</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Login pages</td><td><div class="dork-cell"><code>site:target.com intitle:"sign in"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- DuckDuckGo -->
+        <section id="duckduckgo">
+            <h2>🦆 DuckDuckGo Dorks</h2>
+            <div class="card">
+                <h3>Core Operators</h3>
+                <table>
+                    <thead>
+                        <tr><th>Operator</th><th>Description</th><th>Example</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>site:</code></td><td>Restrict to domain</td><td><div class="dork-cell"><code>site:example.com</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>filetype:</code></td><td>Filter by file type</td><td><div class="dork-cell"><code>filetype:pdf</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>intitle:</code></td><td>Word in page title</td><td><div class="dork-cell"><code>intitle:login</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>inurl:</code></td><td>Word in URL</td><td><div class="dork-cell"><code>inurl:admin</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>!</code></td><td>Bang shortcuts</td><td><div class="dork-cell"><code>!g dorking</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h3>Recon Examples</h3>
+                <table>
+                    <thead>
+                        <tr><th>Purpose</th><th>Dork</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Open directories</td><td><div class="dork-cell"><code>site:target.com intitle:"index of"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>PDF documents</td><td><div class="dork-cell"><code>site:target.com filetype:pdf</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Quick Wikipedia</td><td><div class="dork-cell"><code>!w cybersecurity</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Yandex -->
+        <section id="yandex">
+            <h2>🇷🇺 Yandex Dorks (yandex.com / yandex.ru)</h2>
+            <div class="card">
+                <h3>Core Operators</h3>
+                <table>
+                    <thead>
+                        <tr><th>Operator</th><th>Description</th><th>Example</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>site:</code></td><td>Search domain & subdomains</td><td><div class="dork-cell"><code>site:example.com</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>host:</code></td><td>Search by hostname</td><td><div class="dork-cell"><code>host:www.example.com</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>domain:</code></td><td>Search domain (.com)</td><td><div class="dork-cell"><code>domain:seosly</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>url:</code></td><td>Specific URL</td><td><div class="dork-cell"><code>url:seosly.com</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>title:</code></td><td>Keyword in title</td><td><div class="dork-cell"><code>title:seo audit</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>mime:</code></td><td>File type by MIME</td><td><div class="dork-cell"><code>mime:pdf</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>lang:</code></td><td>Language filter</td><td><div class="dork-cell"><code>lang:en</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>date:</code></td><td>Last modified date</td><td><div class="dork-cell"><code>date:20200815</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>!</code></td><td>Match word form</td><td><div class="dork-cell"><code>!apples</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>+</code></td><td>Force stop words</td><td><div class="dork-cell"><code>work +from home</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h3>OSINT & Recon Examples</h3>
+                <table>
+                    <thead>
+                        <tr><th>Purpose</th><th>Dork</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Exposed login pages</td><td><div class="dork-cell"><code>site:example.com inurl:login</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Open directories</td><td><div class="dork-cell"><code>site:example.com intitle:"index of"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>SQL databases</td><td><div class="dork-cell"><code>site:example.com ext:sql</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Config backups</td><td><div class="dork-cell"><code>site:example.com ext:env OR ext:config</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Admin panels</td><td><div class="dork-cell"><code>site:example.com inurl:admin</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Shodan -->
+        <section id="shodan">
+            <h2>🛰️ Shodan Dorks</h2>
+            <div class="card">
+                <h3>Core Filters</h3>
+                <table>
+                    <thead>
+                        <tr><th>Filter</th><th>Description</th><th>Example</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>city:</code></td><td>Devices in a city</td><td><div class="dork-cell"><code>city:"Bangalore"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>country:</code></td><td>Devices in a country</td><td><div class="dork-cell"><code>country:"IN"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>geo:</code></td><td>GPS coordinates</td><td><div class="dork-cell"><code>geo:"56.913055,118.250862"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>hostname:</code></td><td>Matching hostname</td><td><div class="dork-cell"><code>hostname:google.com</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>net:</code></td><td>IP / CIDR range</td><td><div class="dork-cell"><code>net:210.214.0.0/16</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>port:</code></td><td>Specific port number</td><td><div class="dork-cell"><code>port:443</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>os:</code></td><td>Operating system</td><td><div class="dork-cell"><code>os:"Windows 10"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>product:</code></td><td>Software / device</td><td><div class="dork-cell"><code>product:nginx</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>org:</code></td><td>Organization name</td><td><div class="dork-cell"><code>org:"Google"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>http.title:</code></td><td>Web page title</td><td><div class="dork-cell"><code>http.title:"Dashboard"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h3>Popular Recon Queries</h3>
+                <table>
+                    <thead>
+                        <tr><th>Purpose</th><th>Dork</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Jenkins servers</td><td><div class="dork-cell"><code>"X-Jenkins" http.title:"Dashboard"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Grafana instances</td><td><div class="dork-cell"><code>http.title:"Grafana"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Webcams</td><td><div class="dork-cell"><code>title:"webcam" has_screenshot:true</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>SCADA systems</td><td><div class="dork-cell"><code>port:502 country:US</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Open databases</td><td><div class="dork-cell"><code>product:"MongoDB" port:27017</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- GitHub -->
+        <section id="github">
+            <h2>🐙 GitHub Code Search Dorks</h2>
+            <div class="card">
+                <h3>Core Qualifiers (github.com/search)</h3>
+                <table>
+                    <thead>
+                        <tr><th>Qualifier</th><th>Description</th><th>Example</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>org:</code></td><td>Filter by organization</td><td><div class="dork-cell"><code>org:google</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>user:</code></td><td>Filter by user</td><td><div class="dork-cell"><code>user:torvalds</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>repo:</code></td><td>Search in repository</td><td><div class="dork-cell"><code>repo:angular/angular</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>language:</code></td><td>Programming language</td><td><div class="dork-cell"><code>language:python</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>filename:</code></td><td>Specific filename</td><td><div class="dork-cell"><code>filename:.env</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>extension:</code></td><td>File extension</td><td><div class="dork-cell"><code>extension:json</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>path:</code></td><td>File path pattern</td><td><div class="dork-cell"><code>path:/config/</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>in:</code></td><td>Scope (file/path)</td><td><div class="dork-cell"><code>in:file</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td><code>NOT</code></td><td>Exclude results</td><td><div class="dork-cell"><code>NOT test</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card">
+                <h3>Secrets & Vulnerability Hunting</h3>
+                <table>
+                    <thead>
+                        <tr><th>Purpose</th><th>Dork</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>AWS keys</td><td><div class="dork-cell"><code>AKIAIOSFODNN7EXAMPLE in:file "AWS_SECRET_ACCESS_KEY"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>.env files</td><td><div class="dork-cell"><code>filename:.env "API_KEY="</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Private keys</td><td><div class="dork-cell"><code>"-----BEGIN RSA PRIVATE KEY-----" language:text</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Bearer tokens</td><td><div class="dork-cell"><code>"Authorization: Bearer" extension:json</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                        <tr><td>Org recon</td><td><div class="dork-cell"><code>org:"target" AND "example.com"</code><button class="copy-btn" title="Copy">📋</button></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="about">
+            <h2>📖 About This Resource</h2>
+            <div class="card">
+                <p>This reference hub compiles the most effective and up-to-date advanced search operators (dorks) for major search engines. Operators are curated from official documentation, security research blogs, and OSINT communities.</p>
+                <p style="margin-top:1rem;"><strong>Sources:</strong> Google Hacking Database, Bing Advanced Operator Reference, DuckDuckGo Help Pages, Yandex Direct documentation, Shodan Help Center, GitHub Code Search docs.</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>Built for educational & authorized research purposes. © Dorking Reference Hub</p>
+        </footer>
+    </main>
+
+    <script>
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const code = btn.parentElement.querySelector('code').textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    btn.textContent = '✅';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.textContent = '📋';
+                        btn.classList.remove('copied');
+                    }, 1500);
+                }).catch(() => {
+                    btn.textContent = '❌';
+                    setTimeout(() => btn.textContent = '📋', 1000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
