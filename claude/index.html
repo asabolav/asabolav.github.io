@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DorkMaster Elite — Advanced OSINT Search Engine</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --bg2: #0f1117;
+    --bg3: #161922;
+    --bg4: #1c2030;
+    --border: #2a2f3e;
+    --border2: #3a4155;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --accent5: #ef4444;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --glow: 0 0 20px rgba(0,212,255,0.15);
+    --glow2: 0 0 20px rgba(124,58,237,0.15);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+  /* HEADER */
+  header {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,12,16,0.95);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+  .header-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--accent2), var(--accent)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .logo-text h1 { font-size: 20px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .logo-text p { font-size: 11px; color: var(--text3); letter-spacing: 0.05em; text-transform: uppercase; }
+  .header-stats { display: flex; gap: 20px; }
+  .stat-badge { text-align: center; }
+  .stat-badge .num { font-size: 18px; font-weight: 700; color: var(--accent); }
+  .stat-badge .lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* HERO / TARGET INPUT */
+  .hero { padding: 40px 0 30px; }
+  .hero-title { text-align: center; margin-bottom: 32px; }
+  .hero-title h2 { font-size: 32px; font-weight: 800; line-height: 1.2; margin-bottom: 8px; }
+  .hero-title h2 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-title p { color: var(--text2); font-size: 14px; }
+
+  .target-card {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 32px;
+    box-shadow: var(--glow);
+  }
+  .target-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .target-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .target-input-wrap { flex: 1; min-width: 260px; position: relative; }
+  .target-input-wrap i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 14px; }
+  #targetDomain {
+    width: 100%;
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px 14px 12px 38px;
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  #targetDomain:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,255,0.1); }
+  #targetDomain::placeholder { color: var(--text3); }
+  .btn-apply {
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border: none; border-radius: 10px;
+    padding: 12px 24px; color: #fff;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+    white-space: nowrap; display: flex; align-items: center; gap: 8px;
+  }
+  .btn-apply:hover { opacity: 0.9; }
+  .btn-apply:active { transform: scale(0.98); }
+  .quick-targets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .quick-tag { background: var(--bg4); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+  .quick-tag:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ENGINE TABS */
+  .engine-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
+  .engine-tab {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 16px;
+    cursor: pointer; transition: all 0.2s;
+    font-size: 13px; color: var(--text2);
+  }
+  .engine-tab:hover { border-color: var(--border2); color: var(--text); }
+  .engine-tab.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.08); }
+  .engine-tab .engine-icon { width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .e-google .engine-icon { background: #4285f4; color: #fff; }
+  .e-bing .engine-icon { background: #00809d; color: #fff; }
+  .e-yandex .engine-icon { background: #fc3f1d; color: #fff; }
+  .e-yandexru .engine-icon { background: #c0392b; color: #fff; }
+  .e-duckduckgo .engine-icon { background: #de5833; color: #fff; }
+  .e-shodan .engine-icon { background: #c0392b; color: #fff; }
+  .e-censys .engine-icon { background: #2563eb; color: #fff; }
+  .e-fofa .engine-icon { background: #0891b2; color: #fff; }
+  .e-zoomeye .engine-icon { background: #7c3aed; color: #fff; }
+  .e-github .engine-icon { background: #24292e; color: #fff; }
+  .e-pastebin .engine-icon { background: #02a79e; color: #fff; }
+  .e-wayback .engine-icon { background: #1e40af; color: #fff; }
+
+  /* CATEGORY FILTER */
+  .cat-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; align-items: center; }
+  .cat-filter-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
+  .cat-btn {
+    padding: 5px 14px; border-radius: 20px; font-size: 12px;
+    cursor: pointer; transition: all 0.15s;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--text2);
+  }
+  .cat-btn:hover { border-color: var(--border2); color: var(--text); }
+  .cat-btn.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+
+  /* DORK GRID */
+  .dork-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-bottom: 40px; }
+
+  .dork-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s;
+    display: flex; flex-direction: column;
+  }
+  .dork-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+
+  .dork-card-header {
+    padding: 12px 16px 10px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg4);
+  }
+  .dork-cat-badge {
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 2px 8px; border-radius: 4px;
+  }
+  .cat-info-exposure { background: rgba(239,68,68,0.15); color: #f87171; }
+  .cat-admin { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .cat-files { background: rgba(16,185,129,0.15); color: #34d399; }
+  .cat-login { background: rgba(124,58,237,0.15); color: #a78bfa; }
+  .cat-vuln { background: rgba(239,68,68,0.2); color: #fc8181; }
+  .cat-config { background: rgba(0,212,255,0.15); color: #67e8f9; }
+  .cat-database { background: rgba(249,115,22,0.15); color: #fb923c; }
+  .cat-network { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+  .cat-social { background: rgba(236,72,153,0.15); color: #f472b6; }
+  .cat-iot { background: rgba(245,158,11,0.2); color: #fcd34d; }
+  .cat-cloud { background: rgba(59,130,246,0.15); color: #93c5fd; }
+  .cat-email { background: rgba(167,139,250,0.15); color: #c4b5fd; }
+  .cat-subdomain { background: rgba(52,211,153,0.15); color: #6ee7b7; }
+  .cat-sensitive { background: rgba(239,68,68,0.25); color: #fca5a5; }
+  .cat-api { background: rgba(14,165,233,0.15); color: #7dd3fc; }
+  .cat-code { background: rgba(163,230,53,0.15); color: #bef264; }
+  .cat-camera { background: rgba(251,113,133,0.15); color: #fda4af; }
+  .cat-phone { background: rgba(196,181,253,0.15); color: #ddd6fe; }
+  .cat-osint { background: rgba(0,212,255,0.2); color: #22d3ee; }
+  .cat-wayback { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+
+  .dork-name { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dork-risk { font-size: 10px; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+  .risk-critical { background: rgba(239,68,68,0.2); color: #f87171; }
+  .risk-high { background: rgba(245,158,11,0.2); color: #fbbf24; }
+  .risk-medium { background: rgba(16,185,129,0.15); color: #34d399; }
+  .risk-low { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+
+  .dork-body { padding: 12px 16px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .dork-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .dork-query-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    word-break: break-all;
+    line-height: 1.5;
+    max-height: 80px;
+    overflow-y: auto;
+    cursor: pointer;
+  }
+  .dork-query-box::-webkit-scrollbar { width: 4px; }
+  .dork-query-box::-webkit-scrollbar-track { background: transparent; }
+  .dork-query-box::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .dork-query-box .domain-highlight { color: var(--accent4); }
+  .dork-query-box .keyword { color: #f472b6; }
+
+  .dork-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-search {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 7px 10px; border-radius: 7px; border: 1px solid var(--border);
+    background: transparent; color: var(--text2); font-size: 11px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; text-decoration: none; white-space: nowrap;
+  }
+  .btn-search:hover { border-color: var(--border2); color: var(--text); background: var(--bg4); }
+  .btn-copy { background: var(--bg4); border: 1px solid var(--border); border-radius: 7px; padding: 7px 10px; color: var(--text3); font-size: 11px; cursor: pointer; transition: all 0.15s; }
+  .btn-copy:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* SEARCH ENGINE BUTTONS */
+  .btn-google:hover { border-color: #4285f4; color: #4285f4; }
+  .btn-bing:hover { border-color: #00809d; color: #00809d; }
+  .btn-yandex:hover { border-color: #fc3f1d; color: #fc3f1d; }
+  .btn-ddg:hover { border-color: #de5833; color: #de5833; }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;
+    align-items: center;
+  }
+  .stats-bar-item { display: flex; flex-direction: column; align-items: center; }
+  .stats-bar-item .n { font-size: 20px; font-weight: 700; }
+  .stats-bar-item .l { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+  .n-blue { color: var(--accent); }
+  .n-purple { color: var(--accent2); }
+  .n-green { color: var(--accent3); }
+  .n-amber { color: var(--accent4); }
+  .n-red { color: var(--accent5); }
+  .stats-bar-div { width: 1px; height: 30px; background: var(--border); }
+  .stats-bar-search { flex: 1; }
+  #dorkSearch {
+    width: 100%; background: var(--bg4);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 12px 8px 36px; color: var(--text); font-size: 13px; outline: none;
+  }
+  #dorkSearch:focus { border-color: var(--accent); }
+  .search-wrap { position: relative; }
+  .search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 13px; }
+
+  /* SECTION HEADERS */
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .section-header h3 { font-size: 16px; font-weight: 600; color: var(--text); }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+  .section-count { font-size: 11px; color: var(--text3); }
+
+  /* FOOTER */
+  footer { border-top: 1px solid var(--border); padding: 24px 20px; text-align: center; color: var(--text3); font-size: 12px; margin-top: 20px; }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* TOAST */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--bg3); border: 1px solid var(--accent);
+    border-radius: 10px; padding: 12px 20px;
+    font-size: 13px; color: var(--accent);
+    opacity: 0; transform: translateY(10px);
+    transition: all 0.3s; z-index: 9999;
+    display: flex; align-items: center; gap: 8px;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ALL-IN-ONE LAUNCH */
+  .launch-all-bar {
+    background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(0,212,255,0.1));
+    border: 1px solid var(--border2);
+    border-radius: 12px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .launch-all-bar p { font-size: 13px; color: var(--text2); flex: 1; }
+  .btn-launch-all {
+    background: var(--accent2); border: none; border-radius: 8px;
+    padding: 9px 18px; color: #fff; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; gap: 8px;
+  }
+  .btn-launch-all:hover { opacity: 0.85; }
+
+  @media (max-width: 640px) {
+    .dork-grid { grid-template-columns: 1fr; }
+    .header-stats { display: none; }
+    .hero-title h2 { font-size: 22px; }
+  }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); grid-column: 1/-1; }
+  .empty-state i { font-size: 40px; margin-bottom: 16px; display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">🔍</div>
+      <div class="logo-text">
+        <h1>DorkMaster Elite</h1>
+        <p>Advanced OSINT Search Intelligence</p>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-badge"><div class="num" id="totalDorks">0</div><div class="lbl">Dorks</div></div>
+      <div class="stat-badge"><div class="num" style="color:var(--accent3)">12</div><div class="lbl">Engines</div></div>
+      <div class="stat-badge"><div class="num" style="color:var(--accent2)">20</div><div class="lbl">Categories</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <div class="hero-title">
+      <h2>Elite <span>Search Dork</span> Intelligence Suite</h2>
+      <p>Enter a target domain — all queries auto-populate. Use responsibly for authorized security research only.</p>
+    </div>
+
+    <div class="target-card">
+      <div class="target-label"><i class="fa-solid fa-crosshairs"></i> Target Domain</div>
+      <div class="target-row">
+        <div class="target-input-wrap">
+          <i class="fa-solid fa-globe"></i>
+          <input type="text" id="targetDomain" placeholder="example.com" spellcheck="false" />
+        </div>
+        <button class="btn-apply" onclick="applyTarget()"><i class="fa-solid fa-bolt"></i> Apply Target</button>
+      </div>
+      <div class="quick-targets">
+        <span style="font-size:11px;color:var(--text3);margin-right:4px;">Quick:</span>
+        <span class="quick-tag" onclick="setTarget('tesla.com')">tesla.com</span>
+        <span class="quick-tag" onclick="setTarget('microsoft.com')">microsoft.com</span>
+        <span class="quick-tag" onclick="setTarget('apple.com')">apple.com</span>
+        <span class="quick-tag" onclick="setTarget('github.com')">github.com</span>
+        <span class="quick-tag" onclick="setTarget('shopify.com')">shopify.com</span>
+      </div>
+    </div>
+
+    <!-- ENGINE SELECTOR -->
+    <div class="engine-tabs" id="engineTabs">
+      <div class="engine-tab e-google active" data-engine="google" onclick="selectEngine(this)">
+        <div class="engine-icon">G</div> Google
+      </div>
+      <div class="engine-tab e-bing" data-engine="bing" onclick="selectEngine(this)">
+        <div class="engine-icon">B</div> Bing
+      </div>
+      <div class="engine-tab e-yandex" data-engine="yandex" onclick="selectEngine(this)">
+        <div class="engine-icon">Y</div> Yandex.com
+      </div>
+      <div class="engine-tab e-yandexru" data-engine="yandexru" onclick="selectEngine(this)">
+        <div class="engine-icon">Я</div> Yandex.ru
+      </div>
+      <div class="engine-tab e-duckduckgo" data-engine="duckduckgo" onclick="selectEngine(this)">
+        <div class="engine-icon">🦆</div> DuckDuckGo
+      </div>
+      <div class="engine-tab e-shodan" data-engine="shodan" onclick="selectEngine(this)">
+        <div class="engine-icon">S</div> Shodan
+      </div>
+      <div class="engine-tab e-censys" data-engine="censys" onclick="selectEngine(this)">
+        <div class="engine-icon">C</div> Censys
+      </div>
+      <div class="engine-tab e-fofa" data-engine="fofa" onclick="selectEngine(this)">
+        <div class="engine-icon">F</div> FOFA
+      </div>
+      <div class="engine-tab e-zoomeye" data-engine="zoomeye" onclick="selectEngine(this)">
+        <div class="engine-icon">Z</div> ZoomEye
+      </div>
+      <div class="engine-tab e-github" data-engine="github" onclick="selectEngine(this)">
+        <div class="engine-icon"><i class="fa-brands fa-github" style="font-size:12px"></i></div> GitHub
+      </div>
+      <div class="engine-tab e-pastebin" data-engine="pastebin" onclick="selectEngine(this)">
+        <div class="engine-icon">P</div> Pastebin
+      </div>
+      <div class="engine-tab e-wayback" data-engine="wayback" onclick="selectEngine(this)">
+        <div class="engine-icon">⏳</div> Wayback
+      </div>
+    </div>
+
+    <!-- STATS + SEARCH BAR -->
+    <div class="stats-bar">
+      <div class="stats-bar-item"><div class="n n-red" id="cntCritical">0</div><div class="l">Critical</div></div>
+      <div class="stats-bar-div"></div>
+      <div class="stats-bar-item"><div class="n n-amber" id="cntHigh">0</div><div class="l">High</div></div>
+      <div class="stats-bar-div"></div>
+      <div class="stats-bar-item"><div class="n n-green" id="cntMedium">0</div><div class="l">Medium</div></div>
+      <div class="stats-bar-div"></div>
+      <div class="stats-bar-item"><div class="n n-purple" id="cntLow">0</div><div class="l">Low</div></div>
+      <div class="stats-bar-div"></div>
+      <div class="stats-bar-search">
+        <div class="search-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="dorkSearch" placeholder="Filter dorks by name, category or keyword..." oninput="filterDorks()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- LAUNCH ALL -->
+    <div class="launch-all-bar">
+      <div>
+        <i class="fa-solid fa-rocket" style="color:var(--accent2);margin-right:8px"></i>
+        <span style="font-weight:600;color:var(--text)">Launch All Visible Dorks</span>
+      </div>
+      <p>Open all filtered dorks simultaneously in the selected search engine. Use with a popup blocker disabled.</p>
+      <button class="btn-launch-all" onclick="launchAll()"><i class="fa-solid fa-fire"></i> Launch All</button>
+    </div>
+
+    <!-- CATEGORY FILTER -->
+    <div class="cat-filter">
+      <span class="cat-filter-label"><i class="fa-solid fa-filter"></i> Category:</span>
+      <button class="cat-btn active" data-cat="all" onclick="filterCat(this)">All</button>
+      <button class="cat-btn" data-cat="info-exposure" onclick="filterCat(this)">Info Exposure</button>
+      <button class="cat-btn" data-cat="admin" onclick="filterCat(this)">Admin Panels</button>
+      <button class="cat-btn" data-cat="login" onclick="filterCat(this)">Login Pages</button>
+      <button class="cat-btn" data-cat="files" onclick="filterCat(this)">Sensitive Files</button>
+      <button class="cat-btn" data-cat="vuln" onclick="filterCat(this)">Vulnerabilities</button>
+      <button class="cat-btn" data-cat="config" onclick="filterCat(this)">Configs & Keys</button>
+      <button class="cat-btn" data-cat="database" onclick="filterCat(this)">Databases</button>
+      <button class="cat-btn" data-cat="network" onclick="filterCat(this)">Network & Infra</button>
+      <button class="cat-btn" data-cat="api" onclick="filterCat(this)">API & Keys</button>
+      <button class="cat-btn" data-cat="cloud" onclick="filterCat(this)">Cloud</button>
+      <button class="cat-btn" data-cat="code" onclick="filterCat(this)">Source Code</button>
+      <button class="cat-btn" data-cat="camera" onclick="filterCat(this)">Cameras & IoT</button>
+      <button class="cat-btn" data-cat="email" onclick="filterCat(this)">Email & Comms</button>
+      <button class="cat-btn" data-cat="subdomain" onclick="filterCat(this)">Subdomains</button>
+      <button class="cat-btn" data-cat="sensitive" onclick="filterCat(this)">Sensitive Data</button>
+      <button class="cat-btn" data-cat="social" onclick="filterCat(this)">Social & People</button>
+      <button class="cat-btn" data-cat="osint" onclick="filterCat(this)">OSINT</button>
+      <button class="cat-btn" data-cat="wayback" onclick="filterCat(this)">Wayback/Archive</button>
+      <button class="cat-btn" data-cat="phone" onclick="filterCat(this)">Phone & Contact</button>
+      <button class="cat-btn" data-cat="iot" onclick="filterCat(this)">Industrial IoT</button>
+    </div>
+
+    <!-- DORK GRID -->
+    <div class="section-header">
+      <h3><i class="fa-solid fa-database" style="color:var(--accent);margin-right:8px"></i> Dork Library</h3>
+      <div class="section-line"></div>
+      <div class="section-count" id="visibleCount">Loading...</div>
+    </div>
+    <div class="dork-grid" id="dorkGrid"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>⚠️ <strong>Authorized Use Only.</strong> This tool is designed for security researchers, penetration testers, and bug bounty hunters performing <strong>authorized</strong> assessments. Unauthorized use against systems you do not own or have explicit permission to test may be illegal. Always obtain proper authorization. · <a href="https://www.exploit-db.com/google-hacking-database" target="_blank">GHDB</a> · <a href="https://owasp.org" target="_blank">OWASP</a></p>
+  </div>
+</footer>
+
+<div id="toast"><i class="fa-solid fa-check"></i> <span id="toastMsg">Copied!</span></div>
+
+<script>
+let currentEngine = 'google';
+let currentCat = 'all';
+let currentDomain = '';
+
+const engines = {
+  google:    q => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+  bing:      q => `https://www.bing.com/search?q=${encodeURIComponent(q)}`,
+  yandex:    q => `https://www.yandex.com/search/?text=${encodeURIComponent(q)}`,
+  yandexru:  q => `https://yandex.ru/search/?text=${encodeURIComponent(q)}`,
+  duckduckgo:q => `https://duckduckgo.com/?q=${encodeURIComponent(q)}`,
+  shodan:    q => `https://www.shodan.io/search?query=${encodeURIComponent(q)}`,
+  censys:    q => `https://search.censys.io/search?resource=hosts&q=${encodeURIComponent(q)}`,
+  fofa:      q => `https://fofa.info/result?qbase64=${btoa(q)}`,
+  zoomeye:   q => `https://www.zoomeye.org/searchResult?q=${encodeURIComponent(q)}`,
+  github:    q => `https://github.com/search?q=${encodeURIComponent(q)}&type=code`,
+  pastebin:  q => `https://www.google.com/search?q=site:pastebin.com+${encodeURIComponent(q)}`,
+  wayback:   q => `https://web.archive.org/web/*/${encodeURIComponent(q)}`,
+};
+
+// ============================================================
+// MEGA DORK DATABASE — 200+ entries
+// ============================================================
+const DORKS = [
+  // ─── INFO EXPOSURE ───
+  { id:1, name:'Site Index Exposure', cat:'info-exposure', risk:'high', desc:'Finds open directory indexes on the target domain.', query:'site:{domain} intitle:"index of /"', tags:['directory','listing','files'] },
+  { id:2, name:'Apache Directory Listing', cat:'info-exposure', risk:'high', desc:'Finds Apache server directory listing pages.', query:'site:{domain} intitle:"Index of" "Parent Directory"', tags:['apache','directory'] },
+  { id:3, name:'Robots.txt Disclosure', cat:'info-exposure', risk:'medium', desc:'Reveals hidden paths from robots.txt file.', query:'site:{domain} inurl:robots.txt', tags:['robots','paths'] },
+  { id:4, name:'Sitemap Disclosure', cat:'info-exposure', risk:'low', desc:'Finds XML sitemaps exposing all site URLs.', query:'site:{domain} inurl:sitemap.xml', tags:['sitemap','urls'] },
+  { id:5, name:'Server Error Pages', cat:'info-exposure', risk:'medium', desc:'Finds 500/404 error pages leaking server info.', query:'site:{domain} intitle:"500 Internal Server Error"', tags:['error','server'] },
+  { id:6, name:'PHP Error Disclosure', cat:'info-exposure', risk:'high', desc:'Finds PHP error messages exposing file paths.', query:'site:{domain} "PHP Parse error" OR "PHP Warning" OR "PHP Notice"', tags:['php','error','path'] },
+  { id:7, name:'Stack Trace Exposure', cat:'info-exposure', risk:'high', desc:'Stack traces reveal application internals.', query:'site:{domain} intext:"stack trace" "at java.lang" OR "at System."', tags:['java','stacktrace'] },
+  { id:8, name:'Debug Mode Active', cat:'info-exposure', risk:'critical', desc:'Application running in debug mode exposes secrets.', query:'site:{domain} intext:"Debug mode is on" OR intext:"django.DEBUG"', tags:['debug','django'] },
+  { id:9, name:'Server Version Disclosure', cat:'info-exposure', risk:'medium', desc:'Server version strings in HTTP response.', query:'site:{domain} intitle:"Test Page for" "Apache HTTP Server"', tags:['apache','version'] },
+  { id:10, name:'WordPress Configuration', cat:'info-exposure', risk:'critical', desc:'Exposed WordPress config files with DB credentials.', query:'site:{domain} inurl:wp-config.php', tags:['wordpress','config','database'] },
+  { id:11, name:'phpinfo() Exposure', cat:'info-exposure', risk:'critical', desc:'phpinfo() pages reveal full server configuration.', query:'site:{domain} inurl:phpinfo.php OR intitle:"phpinfo()"', tags:['php','config'] },
+  { id:12, name:'Exposed .git Directory', cat:'info-exposure', risk:'critical', desc:'.git directory exposed allowing source code download.', query:'site:{domain} inurl:"/.git/config"', tags:['git','source'] },
+  { id:13, name:'.env File Exposure', cat:'config', risk:'critical', desc:'.env files contain API keys, DB passwords, secrets.', query:'site:{domain} inurl:".env" filetype:env OR ext:env', tags:['env','secrets','api'] },
+  { id:14, name:'Backup File Discovery', cat:'files', risk:'high', desc:'Finds backup files that may contain sensitive data.', query:'site:{domain} ext:bak OR ext:backup OR ext:old OR ext:bkp', tags:['backup','files'] },
+  { id:15, name:'Log File Exposure', cat:'info-exposure', risk:'high', desc:'Log files often contain credentials, tokens, IPs.', query:'site:{domain} ext:log OR inurl:access.log OR inurl:error.log', tags:['log','access'] },
+
+  // ─── ADMIN PANELS ───
+  { id:20, name:'Admin Panel Generic', cat:'admin', risk:'high', desc:'Finds generic admin login panels.', query:'site:{domain} inurl:admin intitle:"admin" OR inurl:/admin/', tags:['admin','login'] },
+  { id:21, name:'WordPress Admin', cat:'admin', risk:'high', desc:'WordPress admin login interface.', query:'site:{domain} inurl:wp-admin OR inurl:wp-login.php', tags:['wordpress','admin'] },
+  { id:22, name:'Joomla Admin', cat:'admin', risk:'high', desc:'Joomla CMS administrator panel.', query:'site:{domain} inurl:/administrator/index.php', tags:['joomla','cms'] },
+  { id:23, name:'Drupal Admin', cat:'admin', risk:'high', desc:'Drupal CMS admin panel.', query:'site:{domain} inurl:/user/login intitle:"User account"', tags:['drupal','cms'] },
+  { id:24, name:'phpMyAdmin', cat:'admin', risk:'critical', desc:'Database administration interface.', query:'site:{domain} inurl:phpmyadmin OR inurl:pma intitle:"phpMyAdmin"', tags:['phpmyadmin','database'] },
+  { id:25, name:'Control Panel Exposure', cat:'admin', risk:'high', desc:'Generic cPanel / WHM / hosting control panel.', query:'site:{domain} inurl:cpanel OR inurl:whm OR intitle:"cPanel"', tags:['cpanel','hosting'] },
+  { id:26, name:'Webmin Interface', cat:'admin', risk:'critical', desc:'Webmin system administration interface.', query:'site:{domain} intitle:"Webmin" inurl:10000', tags:['webmin','admin'] },
+  { id:27, name:'Admin Dashboard Exposure', cat:'admin', risk:'high', desc:'Exposed dashboard panels.', query:'site:{domain} intitle:"Dashboard" inurl:admin OR inurl:dashboard', tags:['dashboard','admin'] },
+  { id:28, name:'Laravel Debug Panel', cat:'admin', risk:'critical', desc:'Laravel Telescope or Debugbar exposed.', query:'site:{domain} inurl:/telescope OR inurl:/debugbar', tags:['laravel','debug'] },
+  { id:29, name:'Grafana Dashboard', cat:'admin', risk:'high', desc:'Grafana monitoring dashboard exposed.', query:'site:{domain} inurl:3000 intitle:"Grafana"', tags:['grafana','monitoring'] },
+  { id:30, name:'Kibana Dashboard', cat:'admin', risk:'critical', desc:'Kibana Elasticsearch dashboard exposed.', query:'site:{domain} inurl:5601 intitle:"Kibana"', tags:['kibana','elasticsearch'] },
+  { id:31, name:'Portainer Docker UI', cat:'admin', risk:'critical', desc:'Docker management UI exposed.', query:'site:{domain} inurl:9000 intitle:"Portainer"', tags:['docker','container'] },
+  { id:32, name:'Jenkins CI Panel', cat:'admin', risk:'critical', desc:'Jenkins CI/CD system exposed.', query:'site:{domain} inurl:/jenkins intitle:"Dashboard [Jenkins]"', tags:['jenkins','cicd'] },
+  { id:33, name:'SonarQube Panel', cat:'admin', risk:'high', desc:'SonarQube code analysis dashboard.', query:'site:{domain} inurl:9000 intitle:"SonarQube"', tags:['sonarqube','code'] },
+  { id:34, name:'Traefik Dashboard', cat:'admin', risk:'high', desc:'Traefik reverse proxy dashboard.', query:'site:{domain} inurl:8080 intitle:"Traefik"', tags:['traefik','proxy'] },
+  { id:35, name:'RabbitMQ Management', cat:'admin', risk:'high', desc:'RabbitMQ management interface.', query:'site:{domain} inurl:15672 intitle:"RabbitMQ"', tags:['rabbitmq','queue'] },
+  { id:36, name:'Consul UI', cat:'admin', risk:'high', desc:'HashiCorp Consul service mesh UI.', query:'site:{domain} inurl:/ui/dc1/services intitle:"Consul"', tags:['consul','hashicorp'] },
+  { id:37, name:'Vault UI', cat:'admin', risk:'critical', desc:'HashiCorp Vault secrets management.', query:'site:{domain} inurl:8200 intitle:"Vault"', tags:['vault','secrets'] },
+
+  // ─── LOGIN PAGES ───
+  { id:40, name:'Generic Login Pages', cat:'login', risk:'medium', desc:'All login forms on the domain.', query:'site:{domain} inurl:login OR inurl:signin OR inurl:logon', tags:['login','auth'] },
+  { id:41, name:'SSO / OAuth Endpoint', cat:'login', risk:'medium', desc:'Single sign-on pages.', query:'site:{domain} inurl:oauth OR inurl:sso OR inurl:saml', tags:['sso','oauth'] },
+  { id:42, name:'Password Reset Page', cat:'login', risk:'medium', desc:'Password reset flows.', query:'site:{domain} inurl:reset-password OR inurl:forgot-password', tags:['password','reset'] },
+  { id:43, name:'Register / Signup', cat:'login', risk:'low', desc:'Registration endpoints.', query:'site:{domain} inurl:register OR inurl:signup OR inurl:create-account', tags:['register','signup'] },
+  { id:44, name:'Two-Factor Auth Pages', cat:'login', risk:'low', desc:'2FA/MFA pages.', query:'site:{domain} inurl:2fa OR inurl:mfa OR inurl:otp', tags:['2fa','mfa'] },
+  { id:45, name:'API Auth Endpoints', cat:'login', risk:'medium', desc:'API authentication routes.', query:'site:{domain} inurl:/api/auth OR inurl:/api/login OR inurl:/api/token', tags:['api','auth'] },
+  { id:46, name:'Basic Auth Prompts', cat:'login', risk:'high', desc:'HTTP Basic Auth protected pages.', query:'site:{domain} intitle:"401 Authorization Required"', tags:['basic-auth','401'] },
+
+  // ─── SENSITIVE FILES ───
+  { id:50, name:'Exposed PDF Documents', cat:'files', risk:'medium', desc:'Public PDF files which may contain sensitive data.', query:'site:{domain} filetype:pdf', tags:['pdf','documents'] },
+  { id:51, name:'Excel/CSV Data Files', cat:'files', risk:'high', desc:'Spreadsheet files with potentially sensitive data.', query:'site:{domain} filetype:xls OR filetype:xlsx OR filetype:csv', tags:['excel','data'] },
+  { id:52, name:'SQL Dump Files', cat:'files', risk:'critical', desc:'Database dump files exposed publicly.', query:'site:{domain} filetype:sql OR inurl:dump.sql OR inurl:database.sql', tags:['sql','database','dump'] },
+  { id:53, name:'XML Configuration Files', cat:'files', risk:'high', desc:'XML configs may contain credentials.', query:'site:{domain} filetype:xml inurl:config OR inurl:settings', tags:['xml','config'] },
+  { id:54, name:'Private Key Files', cat:'files', risk:'critical', desc:'Private SSL/SSH keys exposed online.', query:'site:{domain} filetype:pem OR filetype:key OR filetype:ppk', tags:['ssh','ssl','key'] },
+  { id:55, name:'Certificate Files', cat:'files', risk:'medium', desc:'SSL certificate files.', query:'site:{domain} filetype:crt OR filetype:cer OR filetype:p12', tags:['ssl','certificate'] },
+  { id:56, name:'Password Files', cat:'files', risk:'critical', desc:'Files with password in the name.', query:'site:{domain} inurl:password OR inurl:passwd OR inurl:credentials', tags:['password','credentials'] },
+  { id:57, name:'Shadow/Passwd Files', cat:'files', risk:'critical', desc:'/etc/passwd or shadow file exposure.', query:'site:{domain} intext:"root:x:0:0:" OR intext:"daemon:x:"', tags:['passwd','shadow','unix'] },
+  { id:58, name:'SSH Config Files', cat:'files', risk:'high', desc:'SSH configuration or known_hosts files.', query:'site:{domain} inurl:ssh OR inurl:known_hosts OR inurl:authorized_keys', tags:['ssh','config'] },
+  { id:59, name:'Dockerfile Exposure', cat:'files', risk:'high', desc:'Dockerfiles may reveal internal architecture.', query:'site:{domain} inurl:Dockerfile OR inurl:docker-compose.yml', tags:['docker','config'] },
+  { id:60, name:'Kubernetes Config', cat:'files', risk:'critical', desc:'Kubernetes config files with cluster access.', query:'site:{domain} inurl:kubeconfig OR inurl:kube-config.yaml OR filetype:yaml "kind: Secret"', tags:['kubernetes','k8s','secrets'] },
+  { id:61, name:'Ansible Playbooks', cat:'files', risk:'high', desc:'Ansible configs with hosts and credentials.', query:'site:{domain} inurl:playbook.yml OR inurl:ansible.cfg', tags:['ansible','devops'] },
+  { id:62, name:'Terraform State Files', cat:'files', risk:'critical', desc:'Terraform state files with infrastructure secrets.', query:'site:{domain} filetype:tfstate OR inurl:terraform.tfstate', tags:['terraform','cloud','iac'] },
+  { id:63, name:'Jenkins Build Configs', cat:'files', risk:'high', desc:'Jenkinsfiles with build pipeline secrets.', query:'site:{domain} inurl:Jenkinsfile OR filetype:groovy "pipeline"', tags:['jenkins','cicd'] },
+  { id:64, name:'Exposed .htaccess', cat:'files', risk:'medium', desc:'.htaccess rules revealing server configuration.', query:'site:{domain} inurl:.htaccess', tags:['htaccess','apache'] },
+  { id:65, name:'Web.config Exposure', cat:'files', risk:'high', desc:'ASP.NET web.config with connection strings.', query:'site:{domain} inurl:web.config filetype:config', tags:['aspnet','config','iis'] },
+  { id:66, name:'PHP Source Code', cat:'files', risk:'high', desc:'Raw PHP source code exposed.', query:'site:{domain} filetype:php intitle:"index of" OR inurl:source', tags:['php','source'] },
+  { id:67, name:'Exposed Python Files', cat:'files', risk:'medium', desc:'Python scripts exposed publicly.', query:'site:{domain} filetype:py OR ext:py', tags:['python','source'] },
+  { id:68, name:'Readme / Changelog', cat:'files', risk:'low', desc:'README and CHANGELOG revealing versions.', query:'site:{domain} inurl:README.md OR inurl:CHANGELOG.md', tags:['readme','version'] },
+
+  // ─── VULNERABILITIES ───
+  { id:70, name:'SQL Injection Candidates', cat:'vuln', risk:'critical', desc:'Pages with query parameters that may be SQLi-vulnerable.', query:'site:{domain} inurl:"?id=" OR inurl:"?cat=" OR inurl:"?page="', tags:['sqli','injection','parameter'] },
+  { id:71, name:'Open Redirect Params', cat:'vuln', risk:'high', desc:'Redirect parameters common for open redirect vulns.', query:'site:{domain} inurl:"?redirect=" OR inurl:"?url=" OR inurl:"?next="', tags:['redirect','open-redirect'] },
+  { id:72, name:'File Inclusion Params', cat:'vuln', risk:'critical', desc:'Parameters used in LFI/RFI attacks.', query:'site:{domain} inurl:"?file=" OR inurl:"?path=" OR inurl:"?include="', tags:['lfi','rfi','inclusion'] },
+  { id:73, name:'SSRF Target Parameters', cat:'vuln', risk:'critical', desc:'Parameters that may be exploited for SSRF.', query:'site:{domain} inurl:"?target=" OR inurl:"?dest=" OR inurl:"?fetch="', tags:['ssrf','parameter'] },
+  { id:74, name:'XXE Vulnerable Endpoints', cat:'vuln', risk:'high', desc:'XML input endpoints.', query:'site:{domain} inurl:xml inurl:upload OR inurl:parse', tags:['xxe','xml'] },
+  { id:75, name:'Exposed phpMyAdmin Login', cat:'vuln', risk:'critical', desc:'Unauthenticated phpMyAdmin access.', query:'site:{domain} inurl:/phpmyadmin intitle:"phpmyadmin"', tags:['phpmyadmin','sqli'] },
+  { id:76, name:'Shellshock Vulnerable CGI', cat:'vuln', risk:'critical', desc:'CGI scripts potentially vulnerable to Shellshock.', query:'site:{domain} inurl:cgi-bin filetype:cgi OR filetype:sh', tags:['shellshock','cgi'] },
+  { id:77, name:'Struts2 Action Pages', cat:'vuln', risk:'critical', desc:'Apache Struts action endpoints for CVE.', query:'site:{domain} inurl:.action OR inurl:!action', tags:['struts','java'] },
+  { id:78, name:'Exposed Upload Forms', cat:'vuln', risk:'high', desc:'File upload endpoints for testing.', query:'site:{domain} inurl:upload OR intitle:"file upload"', tags:['upload','rce'] },
+  { id:79, name:'IDOR Endpoints', cat:'vuln', risk:'high', desc:'Numeric IDs in URLs for IDOR testing.', query:'site:{domain} inurl:"/user/1" OR inurl:"/account/1" OR inurl:"/order/1"', tags:['idor','parameter'] },
+  { id:80, name:'Spring Boot Actuator', cat:'vuln', risk:'critical', desc:'Spring Actuator endpoints exposing app data.', query:'site:{domain} inurl:/actuator/env OR inurl:/actuator/health', tags:['spring','java','actuator'] },
+  { id:81, name:'Log4j JNDI Params', cat:'vuln', risk:'critical', desc:'Parameters likely used in Log4Shell exploitation.', query:'site:{domain} inurl:"?search=" OR inurl:"?query=" OR inurl:"?q="', tags:['log4j','jndi','log4shell'] },
+  { id:82, name:'GraphQL Introspection', cat:'vuln', risk:'high', desc:'GraphQL endpoints for schema discovery.', query:'site:{domain} inurl:/graphql OR inurl:graphiql', tags:['graphql','api'] },
+  { id:83, name:'CORS Misconfiguration', cat:'vuln', risk:'high', desc:'APIs with potential CORS misconfiguration.', query:'site:{domain} inurl:/api/ intitle:"Access-Control-Allow-Origin"', tags:['cors','api'] },
+
+  // ─── CONFIGS & KEYS ───
+  { id:90, name:'AWS Credentials', cat:'config', risk:'critical', desc:'AWS access keys and secrets exposed.', query:'site:{domain} intext:"AKIA" OR intext:"aws_access_key_id"', tags:['aws','credentials','cloud'] },
+  { id:91, name:'Google API Keys', cat:'config', risk:'critical', desc:'Google API keys exposed in web pages.', query:'site:{domain} intext:"AIza" OR intext:"google_api_key"', tags:['google','api','key'] },
+  { id:92, name:'Private RSA Keys', cat:'config', risk:'critical', desc:'Private RSA key blocks exposed.', query:'site:{domain} intext:"-----BEGIN RSA PRIVATE KEY-----"', tags:['rsa','private-key','ssl'] },
+  { id:93, name:'Private EC Keys', cat:'config', risk:'critical', desc:'Elliptic curve private keys.', query:'site:{domain} intext:"-----BEGIN EC PRIVATE KEY-----"', tags:['ec','private-key'] },
+  { id:94, name:'OAuth Bearer Tokens', cat:'config', risk:'critical', desc:'OAuth access tokens in pages/docs.', query:'site:{domain} intext:"access_token" OR intext:"bearer"', tags:['oauth','token','api'] },
+  { id:95, name:'Stripe API Keys', cat:'config', risk:'critical', desc:'Stripe payment API keys exposed.', query:'site:{domain} intext:"sk_live_" OR intext:"pk_live_"', tags:['stripe','payment','api'] },
+  { id:96, name:'Slack Webhook Tokens', cat:'config', risk:'high', desc:'Slack webhook URLs exposed.', query:'site:{domain} intext:"hooks.slack.com/services"', tags:['slack','webhook'] },
+  { id:97, name:'Twilio API Keys', cat:'config', risk:'high', desc:'Twilio auth tokens and SIDs.', query:'site:{domain} intext:"TWILIO_AUTH_TOKEN" OR intext:"AC" "twilio.com"', tags:['twilio','api','sms'] },
+  { id:98, name:'Firebase Config', cat:'config', risk:'high', desc:'Firebase configuration with API keys.', query:'site:{domain} intext:"firebaseio.com" OR intext:"firebase-adminsdk"', tags:['firebase','google'] },
+  { id:99, name:'JWT Secrets', cat:'config', risk:'critical', desc:'JWT secret keys in code or config.', query:'site:{domain} intext:"jwt_secret" OR intext:"JWT_SECRET" OR intext:"jwtSecret"', tags:['jwt','token','auth'] },
+  { id:100, name:'Database Connection Strings', cat:'config', risk:'critical', desc:'Connection strings with credentials.', query:'site:{domain} intext:"mongodb://" OR intext:"mysql://" OR intext:"postgresql://"', tags:['database','connection','credentials'] },
+  { id:101, name:'SendGrid API Keys', cat:'config', risk:'high', desc:'SendGrid email API keys.', query:'site:{domain} intext:"SG." OR intext:"sendgrid_api_key"', tags:['sendgrid','email','api'] },
+  { id:102, name:'GitHub Personal Tokens', cat:'config', risk:'critical', desc:'GitHub PATs exposed in pages.', query:'site:{domain} intext:"ghp_" OR intext:"github_token"', tags:['github','token','scm'] },
+  { id:103, name:'Heroku API Keys', cat:'config', risk:'high', desc:'Heroku API keys in config.', query:'site:{domain} intext:"HEROKU_API_KEY" OR intext:"heroku_token"', tags:['heroku','cloud','api'] },
+  { id:104, name:'Shopify Access Tokens', cat:'config', risk:'high', desc:'Shopify admin API tokens.', query:'site:{domain} intext:"shpat_" OR intext:"X-Shopify-Access-Token"', tags:['shopify','api','ecommerce'] },
+  { id:105, name:'Okta API Token', cat:'config', risk:'critical', desc:'Okta SSO API tokens.', query:'site:{domain} intext:"SSWS" OR intext:"okta_api_token"', tags:['okta','sso','api'] },
+  { id:106, name:'Zendesk API Key', cat:'config', risk:'high', desc:'Zendesk support platform API credentials.', query:'site:{domain} intext:"zendesk_api_key" OR intext:"/api/v2/tickets"', tags:['zendesk','api','support'] },
+  { id:107, name:'Mailgun API Key', cat:'config', risk:'high', desc:'Mailgun email API keys.', query:'site:{domain} intext:"key-" "mailgun" OR intext:"MAILGUN_API_KEY"', tags:['mailgun','email','api'] },
+  { id:108, name:'Algolia API Key', cat:'config', risk:'high', desc:'Algolia search admin API keys.', query:'site:{domain} intext:"ALGOLIA_ADMIN_KEY" OR intext:"algolia_api_key"', tags:['algolia','search','api'] },
+
+  // ─── DATABASES ───
+  { id:110, name:'Open MongoDB', cat:'database', risk:'critical', desc:'Unauthenticated MongoDB instances.', query:'site:{domain} inurl:27017 OR intitle:"MongoDB Server Status"', tags:['mongodb','nosql'] },
+  { id:111, name:'Elasticsearch Open', cat:'database', risk:'critical', desc:'Exposed Elasticsearch clusters.', query:'site:{domain} inurl:9200 intitle:"Elasticsearch"', tags:['elasticsearch','nosql'] },
+  { id:112, name:'Redis Open', cat:'database', risk:'critical', desc:'Redis instances without authentication.', query:'site:{domain} inurl:6379 intitle:"redis"', tags:['redis','cache'] },
+  { id:113, name:'CouchDB Interface', cat:'database', risk:'critical', desc:'CouchDB Fauxton web admin interface.', query:'site:{domain} inurl:5984 intitle:"CouchDB"', tags:['couchdb','nosql'] },
+  { id:114, name:'InfluxDB Dashboard', cat:'database', risk:'high', desc:'InfluxDB time-series database.', query:'site:{domain} inurl:8086 intitle:"InfluxDB"', tags:['influxdb','timeseries'] },
+  { id:115, name:'PostgreSQL Exposed', cat:'database', risk:'critical', desc:'Postgres management interfaces.', query:'site:{domain} inurl:5432 OR inurl:pgAdmin intitle:"pgAdmin"', tags:['postgres','sql'] },
+  { id:116, name:'MySQL Exposed', cat:'database', risk:'critical', desc:'MySQL/MariaDB management interfaces.', query:'site:{domain} inurl:3306 OR inurl:mysql intitle:"MySQL"', tags:['mysql','sql'] },
+  { id:117, name:'Cassandra Exposed', cat:'database', risk:'critical', desc:'Apache Cassandra NoSQL database.', query:'site:{domain} inurl:9042 OR intitle:"Cassandra"', tags:['cassandra','nosql'] },
+  { id:118, name:'Database Backup Files', cat:'database', risk:'critical', desc:'Database backup files online.', query:'site:{domain} inurl:backup filetype:sql OR filetype:dump', tags:['backup','sql','dump'] },
+
+  // ─── NETWORK & INFRA ───
+  { id:120, name:'Network Devices Login', cat:'network', risk:'high', desc:'Router/switch/AP management interfaces.', query:'site:{domain} intitle:"Router" OR intitle:"Firewall" inurl:login', tags:['network','router'] },
+  { id:121, name:'VPN Endpoints', cat:'network', risk:'medium', desc:'VPN login pages and endpoints.', query:'site:{domain} inurl:vpn OR inurl:openvpn OR intitle:"VPN"', tags:['vpn','network'] },
+  { id:122, name:'SSH Web Terminals', cat:'network', risk:'high', desc:'Web-based SSH terminal access.', query:'site:{domain} intitle:"shellinabox" OR intitle:"webssh"', tags:['ssh','shell','web'] },
+  { id:123, name:'Exposed Prometheus', cat:'network', risk:'high', desc:'Prometheus metrics endpoint exposed.', query:'site:{domain} inurl:/metrics intitle:"Prometheus"', tags:['prometheus','metrics'] },
+  { id:124, name:'SNMP Info Disclosure', cat:'network', risk:'medium', desc:'SNMP-related pages exposing device info.', query:'site:{domain} intext:"snmp" OR inurl:snmp intitle:"device"', tags:['snmp','network'] },
+  { id:125, name:'Nagios Monitoring', cat:'network', risk:'high', desc:'Nagios network monitoring interface.', query:'site:{domain} inurl:/nagios OR intitle:"Nagios Core"', tags:['nagios','monitoring'] },
+  { id:126, name:'Zabbix Monitoring', cat:'network', risk:'high', desc:'Zabbix monitoring system dashboard.', query:'site:{domain} inurl:zabbix intitle:"Zabbix"', tags:['zabbix','monitoring'] },
+  { id:127, name:'Exposed SMTP Config', cat:'network', risk:'medium', desc:'SMTP server configuration pages.', query:'site:{domain} inurl:smtp OR intext:"SMTP Server" OR intext:"mail server"', tags:['smtp','email','mail'] },
+  { id:128, name:'FTP Configuration', cat:'network', risk:'high', desc:'FTP server configuration and login.', query:'site:{domain} inurl:ftp OR inurl:"ftpconfig" OR intitle:"FTP"', tags:['ftp','file-transfer'] },
+  { id:129, name:'NetData Dashboard', cat:'network', risk:'medium', desc:'NetData real-time monitoring dashboard.', query:'site:{domain} inurl:19999 intitle:"netdata"', tags:['netdata','monitoring'] },
+  { id:130, name:'Exposed API Gateway', cat:'network', risk:'high', desc:'API gateway management interfaces.', query:'site:{domain} inurl:8001 intitle:"Kong" OR inurl:/api/gateway', tags:['kong','api-gateway'] },
+
+  // ─── API & API KEYS ───
+  { id:140, name:'API Documentation Exposed', cat:'api', risk:'medium', desc:'Swagger/OpenAPI documentation with endpoint details.', query:'site:{domain} inurl:swagger OR inurl:api-docs OR intitle:"Swagger UI"', tags:['swagger','openapi','docs'] },
+  { id:141, name:'REST API Endpoints', cat:'api', risk:'medium', desc:'REST API base endpoints.', query:'site:{domain} inurl:/api/v1 OR inurl:/api/v2 OR inurl:/rest/', tags:['api','rest'] },
+  { id:142, name:'API Key in URL', cat:'api', risk:'critical', desc:'API keys passed directly in URL.', query:'site:{domain} inurl:"api_key=" OR inurl:"apikey=" OR inurl:"access_token="', tags:['api','key','url'] },
+  { id:143, name:'Exposed Postman Collection', cat:'api', risk:'high', desc:'Postman collection files with API structure.', query:'site:{domain} filetype:json "postman" OR inurl:postman', tags:['postman','api','json'] },
+  { id:144, name:'OpenAPI YAML Spec', cat:'api', risk:'medium', desc:'OpenAPI specification files.', query:'site:{domain} filetype:yaml "openapi:" OR filetype:json "swagger:"', tags:['openapi','swagger','api'] },
+  { id:145, name:'Exposed API Tokens in JS', cat:'api', risk:'critical', desc:'API tokens hardcoded in JavaScript files.', query:'site:{domain} filetype:js "api_key" OR filetype:js "apiToken" OR filetype:js "accessToken"', tags:['javascript','api','token'] },
+  { id:146, name:'Webhook URLs Exposed', cat:'api', risk:'high', desc:'Webhook endpoint URLs with secrets.', query:'site:{domain} inurl:webhook OR intext:"webhook_url" OR intext:"webhookUrl"', tags:['webhook','api'] },
+
+  // ─── CLOUD ───
+  { id:150, name:'AWS S3 Bucket', cat:'cloud', risk:'critical', desc:'Open S3 buckets linked to domain.', query:'site:s3.amazonaws.com "{domain}"', tags:['aws','s3','storage'] },
+  { id:151, name:'Azure Blob Storage', cat:'cloud', risk:'critical', desc:'Azure blob storage containers.', query:'site:blob.core.windows.net "{domain}"', tags:['azure','storage','cloud'] },
+  { id:152, name:'Google Cloud Storage', cat:'cloud', risk:'critical', desc:'GCS buckets exposed.', query:'site:storage.googleapis.com "{domain}"', tags:['gcp','storage','cloud'] },
+  { id:153, name:'DigitalOcean Spaces', cat:'cloud', risk:'high', desc:'DigitalOcean Spaces storage.', query:'site:digitaloceanspaces.com "{domain}"', tags:['digitalocean','storage'] },
+  { id:154, name:'Firebase Storage', cat:'cloud', risk:'high', desc:'Firebase storage buckets.', query:'site:firebasestorage.googleapis.com "{domain}"', tags:['firebase','storage'] },
+  { id:155, name:'Heroku App Exposure', cat:'cloud', risk:'medium', desc:'Heroku deployments related to domain.', query:'site:herokuapp.com "{domain}"', tags:['heroku','cloud','deployment'] },
+  { id:156, name:'Netlify Deployment', cat:'cloud', risk:'medium', desc:'Netlify deployments for the domain.', query:'site:netlify.app "{domain}"', tags:['netlify','cloud','deployment'] },
+  { id:157, name:'Vercel Deployment', cat:'cloud', risk:'medium', desc:'Vercel deployment previews.', query:'site:vercel.app "{domain}"', tags:['vercel','cloud','deployment'] },
+  { id:158, name:'GitHub Pages', cat:'cloud', risk:'medium', desc:'GitHub Pages sites.', query:'site:github.io "{domain}"', tags:['github','pages','cloud'] },
+  { id:159, name:'CloudFront Distribution', cat:'cloud', risk:'low', desc:'AWS CloudFront CDN distributions.', query:'site:cloudfront.net "{domain}"', tags:['aws','cloudfront','cdn'] },
+  { id:160, name:'Exposed AWS Lambda', cat:'cloud', risk:'high', desc:'AWS Lambda function URLs exposed.', query:'site:{domain} inurl:lambda OR intext:"lambda.amazonaws.com"', tags:['aws','lambda','serverless'] },
+
+  // ─── SOURCE CODE ───
+  { id:170, name:'GitHub Code Search', cat:'code', risk:'critical', desc:'Search GitHub for domain-related source code.', query:'"{domain}" password OR secret OR api_key OR token', tags:['github','code','secret'] },
+  { id:171, name:'GitHub Config Files', cat:'code', risk:'critical', desc:'Config files with credentials on GitHub.', query:'"{domain}" filename:.env OR filename:config.php OR filename:settings.py', tags:['github','config'] },
+  { id:172, name:'GitHub SSH Keys', cat:'code', risk:'critical', desc:'SSH keys committed to repositories.', query:'"{domain}" filename:id_rsa OR filename:id_dsa', tags:['github','ssh','key'] },
+  { id:173, name:'GitHub JDBC URLs', cat:'code', risk:'critical', desc:'JDBC database connection strings on GitHub.', query:'"{domain}" jdbc: mysql OR postgresql OR oracle', tags:['github','jdbc','database'] },
+  { id:174, name:'GitHub AWS Keys', cat:'code', risk:'critical', desc:'AWS credentials committed to code.', query:'"{domain}" AKIA OR aws_access_key OR aws_secret', tags:['github','aws','credentials'] },
+  { id:175, name:'Exposed Source on Pastebin', cat:'code', risk:'high', desc:'Code pasted on Pastebin mentioning domain.', query:'site:pastebin.com "{domain}"', tags:['pastebin','code','leak'] },
+  { id:176, name:'GitLab Code Search', cat:'code', risk:'critical', desc:'GitLab repositories with credentials.', query:'site:gitlab.com "{domain}" password OR secret', tags:['gitlab','code','credentials'] },
+  { id:177, name:'Bitbucket Code Leak', cat:'code', risk:'critical', desc:'Bitbucket repos exposing secrets.', query:'site:bitbucket.org "{domain}" password OR secret', tags:['bitbucket','code'] },
+
+  // ─── CAMERAS & IoT ───
+  { id:180, name:'Exposed Webcams', cat:'camera', risk:'high', desc:'Unsecured IP cameras and webcams.', query:'site:{domain} inurl:/view.shtml OR intitle:"Live View" inurl:axis', tags:['camera','iot','webcam'] },
+  { id:181, name:'Hikvision Cameras', cat:'camera', risk:'high', desc:'Hikvision IP camera admin panels.', query:'site:{domain} intitle:"Hikvision" OR inurl:"/ISAPI"', tags:['hikvision','camera'] },
+  { id:182, name:'Dahua Cameras', cat:'camera', risk:'high', desc:'Dahua IP camera web interfaces.', query:'site:{domain} intitle:"Dahua" OR inurl:"/RPC2"', tags:['dahua','camera'] },
+  { id:183, name:'IP Camera Default Login', cat:'camera', risk:'critical', desc:'IP cameras with default credential pages.', query:'site:{domain} intitle:"DVR" OR intitle:"NVR" intitle:"login"', tags:['dvr','nvr','camera'] },
+  { id:184, name:'Exposed Smart Devices', cat:'iot', risk:'high', desc:'Smart home and IoT device interfaces.', query:'site:{domain} intitle:"Home Assistant" OR inurl:ha_login', tags:['home-assistant','iot','smart-home'] },
+  { id:185, name:'Industrial SCADA Systems', cat:'iot', risk:'critical', desc:'SCADA/ICS industrial control systems.', query:'site:{domain} intitle:"SCADA" OR intitle:"HMI" OR inurl:scada', tags:['scada','ics','industrial'] },
+  { id:186, name:'Building Management Systems', cat:'iot', risk:'high', desc:'BMS/BAS building automation systems.', query:'site:{domain} intitle:"Building Management" OR inurl:BMS OR inurl:BAS', tags:['bms','building','automation'] },
+  { id:187, name:'Printer Web Interfaces', cat:'iot', risk:'medium', desc:'Network printer admin web interfaces.', query:'site:{domain} intitle:"HP LaserJet" OR intitle:"Canon" inurl:manage', tags:['printer','iot'] },
+
+  // ─── EMAIL & COMMS ───
+  { id:190, name:'Email Addresses Exposed', cat:'email', risk:'medium', desc:'Email addresses on the domain.', query:'site:{domain} intext:"@{domain}"', tags:['email','osint','contact'] },
+  { id:191, name:'Webmail Interface', cat:'email', risk:'medium', desc:'Webmail login pages.', query:'site:{domain} inurl:webmail OR inurl:mail intitle:"Webmail"', tags:['webmail','email'] },
+  { id:192, name:'Outlook Web Access', cat:'email', risk:'medium', desc:'Microsoft OWA login page.', query:'site:{domain} inurl:/owa/ OR intitle:"Outlook Web App"', tags:['outlook','owa','microsoft'] },
+  { id:193, name:'Mail Server Config', cat:'email', risk:'high', desc:'Mail server configuration files.', query:'site:{domain} inurl:exim.conf OR inurl:postfix OR inurl:sendmail.cf', tags:['exim','postfix','smtp'] },
+  { id:194, name:'Email List Dumps', cat:'email', risk:'high', desc:'Email list files or dumps.', query:'site:{domain} filetype:txt "email" "@{domain}"', tags:['email','list','dump'] },
+  { id:195, name:'Slack Channel Archives', cat:'email', risk:'high', desc:'Public Slack workspace data.', query:'site:slack.com "{domain}"', tags:['slack','comms'] },
+  { id:196, name:'Discord Server Links', cat:'email', risk:'low', desc:'Discord servers related to domain.', query:'site:discord.com "{domain}" OR site:discord.gg "{domain}"', tags:['discord','comms'] },
+
+  // ─── SUBDOMAINS ───
+  { id:200, name:'Subdomain Enumeration', cat:'subdomain', risk:'medium', desc:'Enumerate subdomains via search engines.', query:'site:*.{domain} -www', tags:['subdomain','enum'] },
+  { id:201, name:'Dev/Staging Subdomains', cat:'subdomain', risk:'high', desc:'Development and staging environments.', query:'site:{domain} inurl:dev OR inurl:staging OR inurl:test OR inurl:uat', tags:['dev','staging','test'] },
+  { id:202, name:'API Subdomains', cat:'subdomain', risk:'medium', desc:'API subdomain discovery.', query:'site:api.{domain}', tags:['api','subdomain'] },
+  { id:203, name:'Mail Subdomains', cat:'subdomain', risk:'low', desc:'Mail-related subdomains.', query:'site:mail.{domain} OR site:smtp.{domain}', tags:['mail','subdomain'] },
+  { id:204, name:'VPN Subdomains', cat:'subdomain', risk:'medium', desc:'VPN-related subdomains.', query:'site:vpn.{domain} OR site:remote.{domain}', tags:['vpn','subdomain'] },
+  { id:205, name:'Admin Subdomains', cat:'subdomain', risk:'high', desc:'Admin-related subdomains.', query:'site:admin.{domain} OR site:manage.{domain}', tags:['admin','subdomain'] },
+  { id:206, name:'Internal Subdomains', cat:'subdomain', risk:'high', desc:'Internal/intranet subdomains indexed.', query:'site:intranet.{domain} OR site:internal.{domain}', tags:['intranet','internal','subdomain'] },
+  { id:207, name:'CDN Subdomains', cat:'subdomain', risk:'low', desc:'CDN and static asset subdomains.', query:'site:cdn.{domain} OR site:static.{domain} OR site:assets.{domain}', tags:['cdn','assets','subdomain'] },
+  { id:208, name:'Auth Subdomains', cat:'subdomain', risk:'medium', desc:'Authentication service subdomains.', query:'site:auth.{domain} OR site:sso.{domain} OR site:login.{domain}', tags:['auth','sso','subdomain'] },
+  { id:209, name:'FTP Subdomains', cat:'subdomain', risk:'high', desc:'FTP-related subdomains.', query:'site:ftp.{domain} OR site:files.{domain}', tags:['ftp','files','subdomain'] },
+  { id:210, name:'Support/Helpdesk Subdomains', cat:'subdomain', risk:'low', desc:'Support portal subdomains.', query:'site:support.{domain} OR site:help.{domain} OR site:desk.{domain}', tags:['support','helpdesk','subdomain'] },
+
+  // ─── SENSITIVE DATA ───
+  { id:220, name:'SSN / PII Exposure', cat:'sensitive', risk:'critical', desc:'Social security numbers and PII in documents.', query:'site:{domain} filetype:xls OR filetype:csv "social security" OR "ssn" OR "date of birth"', tags:['pii','ssn','gdpr'] },
+  { id:221, name:'Credit Card Data', cat:'sensitive', risk:'critical', desc:'Credit card numbers in indexed content.', query:'site:{domain} intext:"card number" OR intext:"cvv" OR intext:"expiry" filetype:xls OR filetype:csv', tags:['credit-card','pci','payment'] },
+  { id:222, name:'Medical Records Exposure', cat:'sensitive', risk:'critical', desc:'Medical data exposed online.', query:'site:{domain} filetype:pdf "patient" "diagnosis" OR "medical record"', tags:['medical','hipaa','pii'] },
+  { id:223, name:'Internal HR Documents', cat:'sensitive', risk:'high', desc:'HR and employee records exposed.', query:'site:{domain} filetype:xls OR filetype:pdf "salary" OR "employee" OR "payroll"', tags:['hr','salary','employee'] },
+  { id:224, name:'Financial Reports Exposure', cat:'sensitive', risk:'high', desc:'Internal financial data exposed.', query:'site:{domain} filetype:xls "revenue" OR "profit" OR "financial" intitle:"confidential"', tags:['finance','confidential'] },
+  { id:225, name:'Contract Documents', cat:'sensitive', risk:'high', desc:'Legal and contract documents indexed.', query:'site:{domain} filetype:pdf "agreement" OR "contract" intitle:"confidential"', tags:['contract','legal'] },
+  { id:226, name:'Passport/ID Scans', cat:'sensitive', risk:'critical', desc:'Identity document scans exposed.', query:'site:{domain} filetype:jpg OR filetype:png "passport" OR "national ID"', tags:['passport','id','pii'] },
+  { id:227, name:'Network Diagrams', cat:'sensitive', risk:'high', desc:'Internal network topology diagrams.', query:'site:{domain} filetype:pdf OR filetype:vsd "network diagram" OR "topology"', tags:['network','diagram','internal'] },
+  { id:228, name:'Security Audit Reports', cat:'sensitive', risk:'critical', desc:'Security assessment reports exposed.', query:'site:{domain} filetype:pdf "penetration test" OR "vulnerability assessment" OR "security audit"', tags:['pentest','report','security'] },
+
+  // ─── SOCIAL & PEOPLE ───
+  { id:230, name:'LinkedIn Employee Search', cat:'social', risk:'low', desc:'Find employees of the target on LinkedIn.', query:'site:linkedin.com inurl:"in/" "{domain}"', tags:['linkedin','employees','osint'] },
+  { id:231, name:'LinkedIn Company Page', cat:'social', risk:'low', desc:'Company page on LinkedIn.', query:'site:linkedin.com/company "{domain}"', tags:['linkedin','company'] },
+  { id:232, name:'Twitter/X Mentions', cat:'social', risk:'low', desc:'Twitter mentions of the domain.', query:'site:twitter.com OR site:x.com "{domain}"', tags:['twitter','social'] },
+  { id:233, name:'Facebook Page', cat:'social', risk:'low', desc:'Facebook presence of the organization.', query:'site:facebook.com "{domain}"', tags:['facebook','social'] },
+  { id:234, name:'GitHub Employees', cat:'social', risk:'medium', desc:'GitHub profiles of company employees.', query:'site:github.com intext:"{domain}" in:bio OR in:readme', tags:['github','employees'] },
+  { id:235, name:'Glassdoor Tech Stack', cat:'social', risk:'medium', desc:'Tech stack reviews on Glassdoor.', query:'site:glassdoor.com "{domain}" technology OR stack OR infrastructure', tags:['glassdoor','techstack'] },
+  { id:236, name:'Indeed Job Postings', cat:'social', risk:'medium', desc:'Job postings revealing internal tech stack.', query:'site:indeed.com OR site:linkedin.com/jobs "{domain}" developer OR engineer OR security', tags:['jobs','techstack','osint'] },
+  { id:237, name:'Crunchbase Profile', cat:'social', risk:'low', desc:'Crunchbase company information.', query:'site:crunchbase.com "{domain}"', tags:['crunchbase','company','osint'] },
+
+  // ─── OSINT ───
+  { id:240, name:'Pastebin Dumps', cat:'osint', risk:'critical', desc:'Domain credentials or data on Pastebin.', query:'site:pastebin.com "{domain}" password OR credentials OR dump', tags:['pastebin','leak','credentials'] },
+  { id:241, name:'HaveIBeenPwned Search', cat:'osint', risk:'high', desc:'Data breaches involving the domain.', query:'site:haveibeenpwned.com "{domain}"', tags:['breach','hibp','leak'] },
+  { id:242, name:'LeakBase / BreachForums', cat:'osint', risk:'critical', desc:'Data leaks on breach sites.', query:'"{domain}" filetype:txt password OR hash OR leak', tags:['breach','leak','darkweb'] },
+  { id:243, name:'Shodan Domain Search', cat:'osint', risk:'high', desc:'Shodan hosts linked to domain.', query:'hostname:{domain}', tags:['shodan','network','host'] },
+  { id:244, name:'Censys Domain Hosts', cat:'osint', risk:'high', desc:'Censys certificate/host search.', query:'parsed.names: {domain}', tags:['censys','ssl','hosts'] },
+  { id:245, name:'Certificate Transparency', cat:'osint', risk:'medium', desc:'All SSL certs ever issued for domain.', query:'site:crt.sh "{domain}"', tags:['ssl','certificate','ct'] },
+  { id:246, name:'WHOIS History', cat:'osint', risk:'low', desc:'WHOIS data and registrar info.', query:'site:whois.domaintools.com "{domain}"', tags:['whois','registrar','osint'] },
+  { id:247, name:'VirusTotal Domain', cat:'osint', risk:'medium', desc:'VirusTotal analysis of domain.', query:'site:virustotal.com "{domain}"', tags:['virustotal','malware','reputation'] },
+  { id:248, name:'Shodan IP Ranges', cat:'osint', risk:'high', desc:'Shodan search for domain IP ranges.', query:'net:{domain}', tags:['shodan','ip','network'] },
+  { id:249, name:'Google Cache', cat:'osint', risk:'medium', desc:'Google cached versions of pages.', query:'cache:{domain}', tags:['cache','google','osint'] },
+  { id:250, name:'Related Sites', cat:'osint', risk:'low', desc:'Sites related to target domain.', query:'related:{domain}', tags:['related','google','osint'] },
+  { id:251, name:'Domain Info Card', cat:'osint', risk:'low', desc:'Google info card for domain.', query:'info:{domain}', tags:['info','google','osint'] },
+  { id:252, name:'Link Profile', cat:'osint', risk:'low', desc:'Sites linking to the target domain.', query:'link:{domain}', tags:['backlinks','google','osint'] },
+  { id:253, name:'Dun & Bradstreet Data', cat:'osint', risk:'low', desc:'Business data on D&B.', query:'site:dnb.com "{domain}"', tags:['dnb','business','osint'] },
+
+  // ─── WAYBACK / ARCHIVE ───
+  { id:260, name:'All Archived Pages', cat:'wayback', risk:'medium', desc:'All archived snapshots of the domain.', query:'http://web.archive.org/web/*/{domain}', tags:['wayback','archive'] },
+  { id:261, name:'Old Login Pages', cat:'wayback', risk:'high', desc:'Archived login pages possibly with old endpoints.', query:'http://web.archive.org/web/*/login.{domain}', tags:['wayback','login'] },
+  { id:262, name:'Archived Config Files', cat:'wayback', risk:'critical', desc:'Old config files in archive.', query:'http://web.archive.org/web/*/{domain}/*.env', tags:['wayback','config','env'] },
+  { id:263, name:'Archive.org Search', cat:'wayback', risk:'medium', desc:'Search domain on archive.org.', query:'site:archive.org "{domain}"', tags:['archive','wayback'] },
+  { id:264, name:'Cached JavaScript Files', cat:'wayback', risk:'high', desc:'Old JS files with keys in archive.', query:'http://web.archive.org/web/*/{domain}/*.js', tags:['wayback','javascript'] },
+
+  // ─── PHONE & CONTACT ───
+  { id:270, name:'Phone Numbers Exposed', cat:'phone', risk:'medium', desc:'Phone numbers on the target domain.', query:'site:{domain} intext:"tel:" OR intext:"phone:" OR intext:"call us"', tags:['phone','contact','osint'] },
+  { id:271, name:'Contact Pages', cat:'phone', risk:'low', desc:'Contact information pages.', query:'site:{domain} inurl:contact OR inurl:about intext:"@{domain}"', tags:['contact','email','osint'] },
+  { id:272, name:'Skype/Teams Addresses', cat:'phone', risk:'low', desc:'Skype or Teams identifiers on domain.', query:'site:{domain} intext:"skype:" OR intext:"teams.microsoft.com"', tags:['skype','teams','contact'] },
+  { id:273, name:'WhatsApp Business', cat:'phone', risk:'low', desc:'WhatsApp business links.', query:'site:{domain} inurl:wa.me OR intext:"whatsapp"', tags:['whatsapp','contact'] },
+
+  // ─── INDUSTRIAL IoT ───
+  { id:280, name:'MODBUS/PROFINET', cat:'iot', risk:'critical', desc:'Industrial protocol-exposed devices.', query:'site:{domain} intext:"modbus" OR intext:"profinet" OR intext:"ethercat"', tags:['scada','modbus','industrial'] },
+  { id:281, name:'PLC Web Interfaces', cat:'iot', risk:'critical', desc:'Programmable logic controller web GUIs.', query:'site:{domain} intitle:"Siemens PLC" OR intitle:"Allen Bradley" OR intitle:"Mitsubishi"', tags:['plc','scada','ics'] },
+  { id:282, name:'Smart Grid / DERMS', cat:'iot', risk:'critical', desc:'Smart grid management systems.', query:'site:{domain} intitle:"DERMS" OR inurl:scada intext:"power"', tags:['grid','scada','energy'] },
+  { id:283, name:'CCTV Control Systems', cat:'iot', risk:'high', desc:'CCTV VMS and DVR management.', query:'site:{domain} intitle:"Video Management" OR intitle:"DVR" OR inurl:cctv', tags:['cctv','dvr','camera'] },
+
+  // ─── ADDITIONAL ADVANCED ───
+  { id:290, name:'Exposed Elasticsearch Indices', cat:'database', risk:'critical', desc:'List of indices in exposed Elasticsearch.', query:'site:{domain} inurl:/_cat/indices OR inurl:/_cluster/health', tags:['elasticsearch','indices'] },
+  { id:291, name:'Jupyter Notebooks', cat:'code', risk:'critical', desc:'Exposed Jupyter notebooks with code & data.', query:'site:{domain} inurl:/notebooks OR intitle:"Jupyter Notebook"', tags:['jupyter','python','data'] },
+  { id:292, name:'Metabase Analytics', cat:'admin', risk:'high', desc:'Metabase BI dashboard exposed.', query:'site:{domain} inurl:3000 intitle:"Metabase"', tags:['metabase','bi','analytics'] },
+  { id:293, name:'Exposed Airflow UI', cat:'admin', risk:'high', desc:'Apache Airflow workflow orchestration UI.', query:'site:{domain} intitle:"Airflow" inurl:/dags', tags:['airflow','workflow','data'] },
+  { id:294, name:'Exposed MLflow', cat:'admin', risk:'medium', desc:'MLflow ML experiment tracking UI.', query:'site:{domain} inurl:5000 intitle:"MLflow"', tags:['mlflow','ml','data'] },
+  { id:295, name:'NTLM Authentication Hash', cat:'vuln', risk:'critical', desc:'NTLM hash challenges leaking Windows auth info.', query:'site:{domain} intitle:"401 Unauthorized" WWW-Authenticate: NTLM', tags:['ntlm','windows','auth'] },
+  { id:296, name:'Exposed Drone CI', cat:'admin', risk:'high', desc:'Drone CI/CD system exposed.', query:'site:{domain} inurl:8080 intitle:"Drone"', tags:['drone','cicd'] },
+  { id:297, name:'Apache Tomcat Manager', cat:'admin', risk:'critical', desc:'Tomcat manager app for deploying WARs.', query:'site:{domain} inurl:/manager/html intitle:"Tomcat"', tags:['tomcat','java','admin'] },
+  { id:298, name:'JBoss JMX Console', cat:'admin', risk:'critical', desc:'JBoss JMX management console.', query:'site:{domain} inurl:/jmx-console OR inurl:/web-console intitle:"JBoss"', tags:['jboss','java','admin'] },
+  { id:299, name:'Spring Cloud Config', cat:'config', risk:'critical', desc:'Spring Cloud Config server endpoints.', query:'site:{domain} inurl:/actuator/configprops OR inurl:/env', tags:['spring','cloud','config'] },
+  { id:300, name:'Exposed Redis Commander', cat:'database', risk:'critical', desc:'Redis Commander web interface.', query:'site:{domain} intitle:"Redis Commander"', tags:['redis','database','admin'] },
+];
+
+// Count totals
+document.getElementById('totalDorks').textContent = DORKS.length;
+document.getElementById('cntCritical').textContent = DORKS.filter(d=>d.risk==='critical').length;
+document.getElementById('cntHigh').textContent = DORKS.filter(d=>d.risk==='high').length;
+document.getElementById('cntMedium').textContent = DORKS.filter(d=>d.risk==='medium').length;
+document.getElementById('cntLow').textContent = DORKS.filter(d=>d.risk==='low').length;
+
+function getEngineName(eng) {
+  const names = { google:'Google', bing:'Bing', yandex:'Yandex.com', yandexru:'Yandex.ru', duckduckgo:'DuckDuckGo', shodan:'Shodan', censys:'Censys', fofa:'FOFA', zoomeye:'ZoomEye', github:'GitHub', pastebin:'Pastebin', wayback:'Wayback' };
+  return names[eng] || eng;
+}
+function getEngineIcon(eng) {
+  const icons = { google:'G', bing:'B', yandex:'Y', yandexru:'Я', duckduckgo:'🦆', shodan:'S', censys:'C', fofa:'F', zoomeye:'Z', github:'⌥', pastebin:'P', wayback:'⏳' };
+  return icons[eng] || eng[0].toUpperCase();
+}
+function getEngineColor(eng) {
+  const colors = { google:'#4285f4', bing:'#00809d', yandex:'#fc3f1d', yandexru:'#c0392b', duckduckgo:'#de5833', shodan:'#e74c3c', censys:'#2563eb', fofa:'#0891b2', zoomeye:'#7c3aed', github:'#24292e', pastebin:'#02a79e', wayback:'#1e40af' };
+  return colors[eng] || '#888';
+}
+
+function buildQuery(dork) {
+  const domain = currentDomain || 'example.com';
+  return dork.query.replace(/\{domain\}/g, domain);
+}
+
+function launchDork(dork) {
+  const q = buildQuery(dork);
+  const url = engines[currentEngine](q);
+  window.open(url, '_blank');
+}
+
+function copyQuery(dork) {
+  const q = buildQuery(dork);
+  navigator.clipboard.writeText(q).then(() => showToast('Query copied!'));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function formatQuery(q) {
+  const domain = currentDomain || 'example.com';
+  return q
+    .replace(/site:\*?\{domain\}/g, `<span class="keyword">site:</span><span class="domain-highlight">${domain}</span>`)
+    .replace(/\{domain\}/g, `<span class="domain-highlight">${domain}</span>`)
+    .replace(/(site:|inurl:|intitle:|intext:|filetype:|ext:|related:|cache:|info:|link:|hostname:|parsed\.names:)/g, '<span class="keyword">$1</span>');
+}
+
+function renderCard(dork) {
+  const engColor = getEngineColor(currentEngine);
+  const engName = getEngineName(currentEngine);
+  const riskClass = `risk-${dork.risk}`;
+  const catClass = `cat-${dork.cat}`;
+  return `
+  <div class="dork-card" data-cat="${dork.cat}" data-tags="${dork.tags.join(' ')}">
+    <div class="dork-card-header">
+      <span class="dork-cat-badge ${catClass}">${dork.cat.replace('-',' ')}</span>
+      <span class="dork-name" title="${dork.name}">${dork.name}</span>
+      <span class="dork-risk ${riskClass}">${dork.risk}</span>
+    </div>
+    <div class="dork-body">
+      <p class="dork-desc">${dork.desc}</p>
+      <div class="dork-query-box" title="Click to copy" onclick="copyQuery(DORKS.find(d=>d.id===${dork.id}))">${formatQuery(dork.query)}</div>
+      <div class="dork-actions">
+        <button class="btn-search" onclick="launchDork(DORKS.find(d=>d.id===${dork.id}))" style="border-color:${engColor}30;color:${engColor}">
+          <span>${getEngineIcon(currentEngine)}</span> ${engName}
+        </button>
+        <a class="btn-search btn-google" href="${engines.google(buildQuery(dork))}" target="_blank">G</a>
+        <a class="btn-search btn-bing" href="${engines.bing(buildQuery(dork))}" target="_blank">B</a>
+        <a class="btn-search btn-yandex" href="${engines.yandex(buildQuery(dork))}" target="_blank">Y</a>
+        <a class="btn-search btn-ddg" href="${engines.duckduckgo(buildQuery(dork))}" target="_blank">🦆</a>
+        <button class="btn-copy" onclick="copyQuery(DORKS.find(d=>d.id===${dork.id}))" title="Copy query"><i class="fa-regular fa-copy"></i></button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function getFilteredDorks() {
+  const search = document.getElementById('dorkSearch').value.toLowerCase();
+  return DORKS.filter(d => {
+    const catMatch = currentCat === 'all' || d.cat === currentCat;
+    const searchMatch = !search || d.name.toLowerCase().includes(search) || d.cat.toLowerCase().includes(search) || d.tags.some(t=>t.includes(search)) || d.desc.toLowerCase().includes(search);
+    return catMatch && searchMatch;
+  });
+}
+
+function renderGrid() {
+  const filtered = getFilteredDorks();
+  const grid = document.getElementById('dorkGrid');
+  document.getElementById('visibleCount').textContent = `${filtered.length} dorks`;
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-search"></i><p>No dorks match your filter.</p></div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(renderCard).join('');
+}
+
+function applyTarget() {
+  const val = document.getElementById('targetDomain').value.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+  currentDomain = val;
+  renderGrid();
+  showToast('Target applied: ' + (val || 'example.com'));
+}
+
+function setTarget(domain) {
+  document.getElementById('targetDomain').value = domain;
+  applyTarget();
+}
+
+document.getElementById('targetDomain').addEventListener('keydown', e => {
+  if (e.key === 'Enter') applyTarget();
+});
+
+function selectEngine(el) {
+  document.querySelectorAll('.engine-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentEngine = el.dataset.engine;
+  renderGrid();
+}
+
+function filterCat(el) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentCat = el.dataset.cat;
+  renderGrid();
+}
+
+function filterDorks() {
+  renderGrid();
+}
+
+function launchAll() {
+  if (!currentDomain) { showToast('⚠️ Set a target domain first!'); return; }
+  const filtered = getFilteredDorks();
+  if (filtered.length > 30) {
+    if (!confirm(`This will open ${filtered.length} tabs. Continue?`)) return;
+  }
+  filtered.forEach((d, i) => {
+    setTimeout(() => {
+      const q = buildQuery(d);
+      const url = engines[currentEngine](q);
+      window.open(url, '_blank');
+    }, i * 200);
+  });
+}
+
+// Initial render
+renderGrid();
+</script>
+</body>
+</html>
